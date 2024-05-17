@@ -1,2 +1,2 @@
-# IoT-Project
+# VoltVault
 An IoT's project.
