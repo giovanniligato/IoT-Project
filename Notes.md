@@ -90,8 +90,8 @@ Deploy delle schede
 
 - Sensore CO
 - Sensore Temperatura e Umidità
-- Sensore di movimento
-- Bottone aperture manuale + Semaforo
+- Sensore di movimento + Bottone aperture manuale interno e esterno.
+- Semaforo
 - HVAC (Machine Learning)
 - Border Router
 
