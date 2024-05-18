@@ -79,6 +79,39 @@ Gestione database + ricezione valori da sensori. Registrazione sensori in fase d
 
 
 
+### Formato encoding
+JSON + Standard SenML
+
+
+
+### Architettura del sistema
+
+Deploy delle schede
+
+- Sensore CO
+- Sensore Temperatura e Umidità
+- Sensore di movimento
+- Bottone aperture manuale + Semaforo
+- HVAC (Machine Learning)
+- Border Router
+
+Protocolli di comunicazione
+
+Tutti i sensori sono dei server CoAP a cui si registrano gli attuattori, osservando le risorse che mettono a disposizione.
+Tutti i sensori e anche attuatori in fase di creazione della rete si registrano al CoAP server (agiscono da Client CoAP).
+
+
+HVAC osserva CO e Temperatura e Umidità.
+
+
+Situazione iniziale. Tutti i sensori e attuatori sono spenti tranne il movement sensor, perché nessuna persona è dentro la stanza e in questo modo si evita di consumare energia inutilmente.
+Room status osserva sensore di movimento. Sensore di CO e Temperatura e Umidità osservano Room status. HVAC osserva CO e Temperatura e Umidità. ROOM status osserva anche HVAC.
+
+
+
+
+
+
 
 
 
