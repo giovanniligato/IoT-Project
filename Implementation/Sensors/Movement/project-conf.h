@@ -35,7 +35,7 @@
 // Set the max response payload before enable fragmentation:
 
 #undef REST_MAX_CHUNK_SIZE
-#define REST_MAX_CHUNK_SIZE    64
+#define REST_MAX_CHUNK_SIZE    512 // 64
 
 // Set the maximum number of CoAP concurrent transactions:
 
@@ -49,7 +49,7 @@
 #define UIP_CONF_MAX_ROUTES   10
 
 #undef UIP_CONF_BUFFER_SIZE
-#define UIP_CONF_BUFFER_SIZE    240
+#define UIP_CONF_BUFFER_SIZE    680 // 240
 
 
 #define LOG_LEVEL_APP LOG_LEVEL_DBG

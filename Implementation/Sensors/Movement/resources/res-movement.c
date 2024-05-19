@@ -2,9 +2,12 @@
 #include "coap-engine.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "json-senml.h"
+#include "sys/log.h"
 
-extern uint32_t get_time_counter(void);
+#define LOG_MODULE "App"
+#define LOG_LEVEL LOG_LEVEL_APP
 
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void res_event_handler(void);
@@ -31,17 +34,31 @@ res_event_handler(void)
 static void
 res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
-    const char *base_unit = "boolean";
-    int base_version = 1;
-    const char *name = "vault_activated";
+    senml_measurement_t measurements[1];
+    measurements[0].name = "movement";
+    measurements[0].type = SENML_TYPE_BV;
+    measurements[0].value.bv = vault_activated;
+    char base_name[BASE_NAME_LEN];
+    get_mac_address(base_name);
 
-    int length = create_senml_payload((char *)buffer, preferred_size, base_unit, base_version, name, vault_activated);
+    senml_payload_t payload = {
+        .base_name = base_name,
+        .base_time = 0,
+        .version = 1,
+        .measurements = measurements,
+        .num_measurements = 1
+    };
+
+    int length = create_senml_payload((char *)buffer, preferred_size, &payload);
 
     if (length < 0) {
         coap_set_status_code(response, BAD_REQUEST_4_00);
     } else {
         coap_set_header_content_format(response, APPLICATION_JSON);
         coap_set_payload(response, buffer, length);
+        
+        // Printing the payload for debugging purposes
+        LOG_DBG("Payload: %s\n", buffer);
     }
 }
 
