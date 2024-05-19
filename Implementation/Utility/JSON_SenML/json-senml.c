@@ -1,7 +1,11 @@
 #include <nrfx.h>
 #include <stdio.h>
 
+
+#define BASE_NAME_LEN 25
+
 static void get_mac_address(char *mac_str) {
+    
     uint8_t mac[6];
     mac[0] = (NRF_FICR->DEVICEADDR[1] >> 8) & 0xFF;
     mac[1] = (NRF_FICR->DEVICEADDR[1] >> 0) & 0xFF;
@@ -10,7 +14,7 @@ static void get_mac_address(char *mac_str) {
     mac[4] = (NRF_FICR->DEVICEADDR[0] >> 8) & 0xFF;
     mac[5] = (NRF_FICR->DEVICEADDR[0] >> 0) & 0xFF;
     
-    snprintf(mac_str, 24, "urn:dev:mac:%02X%02X%02X%02X%02X%02X", 
+    snprintf(mac_str, BASE_NAME_LEN, "urn:dev:mac:%02X%02X%02X%02X%02X%02X:", 
              mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 }
 
@@ -20,7 +24,7 @@ static int create_senml_payload(char *buffer, size_t buffer_size, const char *ba
         return -1;
     }
 
-    char base_name[24];
+    char base_name[BASE_NAME_LEN];
     get_mac_address(base_name);
 
     double base_time = (double)get_time_counter(); // Use the time counter from movement.c

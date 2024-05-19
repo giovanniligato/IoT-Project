@@ -107,6 +107,8 @@ HVAC osserva CO e Temperatura e Umidità.
 Situazione iniziale. Tutti i sensori e attuatori sono spenti tranne il movement sensor, perché nessuna persona è dentro la stanza e in questo modo si evita di consumare energia inutilmente.
 Room status osserva sensore di movimento. Sensore di CO e Temperatura e Umidità osservano Room status. HVAC osserva CO e Temperatura e Umidità. ROOM status osserva anche HVAC.
 
+Quando porta è aperta (tipo per 15 secondi per permettere all'utente di entrare) il led verde di vault status lampeggia.
+
 
 
 
