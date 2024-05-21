@@ -78,6 +78,16 @@
           <id>2</id>
         </interface_config>
       </mote>
+      <mote>
+        <interface_config>
+          org.contikios.cooja.interfaces.Position
+          <pos x="68.67316701184134" y="50.363395806341" />
+        </interface_config>
+        <interface_config>
+          org.contikios.cooja.contikimote.interfaces.ContikiMoteID
+          <id>3</id>
+        </interface_config>
+      </mote>
     </motetype>
   </simulation>
   <plugin>
@@ -88,7 +98,7 @@
       <skin>org.contikios.cooja.plugins.skins.GridVisualizerSkin</skin>
       <skin>org.contikios.cooja.plugins.skins.TrafficVisualizerSkin</skin>
       <skin>org.contikios.cooja.plugins.skins.UDGMVisualizerSkin</skin>
-      <viewport>4.290866447272173 0.0 0.0 4.290866447272173 55.16396621501555 -37.82550617821041</viewport>
+      <viewport>2.530795344018681 0.0 0.0 2.530795344018681 35.82591167160669 44.832569780526335</viewport>
     </plugin_config>
     <bounds x="1" y="0" height="400" width="400" z="1" />
   </plugin>
@@ -106,6 +116,7 @@
     <plugin_config>
       <mote>0</mote>
       <mote>1</mote>
+      <mote>2</mote>
       <showRadioRXTX />
       <showRadioHW />
       <showLEDs />
