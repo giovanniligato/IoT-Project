@@ -1,0 +1,6 @@
+.DS_Store
+.vscode/
+
+Implementation/BorderRouter/build/
+Implementation/Sensors/*/build/
+Implementation/Actuators/*/build/
