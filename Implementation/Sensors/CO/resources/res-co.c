@@ -20,7 +20,25 @@ EVENT_RESOURCE(res_movement,
                NULL,
                res_event_handler);
 
-static bool vault_activated = false;
+// static bool vault_activated = false;
+static double co_level = 0.0;
+#define MIN_CO_LEVEL 0.00117
+#define MAX_CO_LEVEL 0.01442
+#define MAX_PERCENTAGE_VARIATION 5
+
+
+// extract a random number between min and max
+// Creare funzione completa randomica che non restituisce numeri
+// a caso, ma è intelligente e fa in modo che il valore randomico
+// sia tipo tra +-5% del valore precedente e in più se tipo un booleano
+// è settato (HVAC acceso) allora restituisce solo valori randomici
+// che sono -5% del valore precedente. 
+
+// Fare funzione di parsing per JSON perché per adesso abbiamo solo funzione che crea il JSON
+
+
+
+minimo + (rand() % (maximo+1 - minimo))
 
 static void
 res_event_handler(void)

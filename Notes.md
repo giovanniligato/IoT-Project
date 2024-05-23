@@ -130,3 +130,10 @@ Quando porta è aperta (tipo per 15 secondi per permettere all'utente di entrare
 - Implementazione cloud application
 - Database
 - Grafana
+
+
+
+
+# References
+https://www.kaggle.com/datasets/garystafford/environmental-sensor-data-132k
+https://portal.ct.gov/-/media/departments-and-agencies/dph/dph/environmental_health/eoha/pdf/co2013pdf.pdf?la=en&hash=188FCFBC7E270567B68802725F4383FF#:~:text=Greater%20than%20400%20ppm%20Can,from%20outside%20of%20the%20house.&text=Any%20reading%20over%2010%20ppm,that%20needs%20to%20be%20investigated.
