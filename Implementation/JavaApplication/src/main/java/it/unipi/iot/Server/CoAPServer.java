@@ -6,5 +6,6 @@ public class CoAPServer extends CoapServer {
     public CoAPServer() {
         super();
         add(new CoAPRegistration("register"));
+        add(new CoAPDiscovery("discovery"));
     }
 }

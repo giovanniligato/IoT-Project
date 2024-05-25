@@ -1,9 +1,11 @@
 #include "contiki.h"
 #include "coap-engine.h"
-// #include "os/dev/button-hal.h"
 #include "coap-blocking-api.h"
 #include "sys/etimer.h"
 #include "sys/log.h"
+#include "os/dev/leds.h"
+#include "json-senml.h"
+#include "coap-observe-client.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,6 +28,8 @@
 
 #define SAMPLE_INTERVAL 5*CLOCK_SECOND
 
+#define LEDS_CONF_OFF 5
+
 
 extern coap_resource_t res_co;
 static struct etimer sleep_timer;
@@ -36,24 +40,58 @@ static int retry_requests = MAX_REQUESTS;
 
 static bool sleeping_mode = true;
 
+extern bool hvac_status;
+
 // Observe the resource 
 static coap_observee_t *vault_status_resource;
 
+PROCESS(co_sensor_process, "CO sensor process");
+AUTOSTART_PROCESSES(&co_sensor_process);
+
 static void notification_callback(coap_observee_t *obs, void *notification, coap_notification_flag_t flag)
 {
+  senml_payload_t payload;
+  const uint8_t *buffer = NULL;
+
+  int buffer_size = coap_get_payload(notification, &buffer);
+  char *buffer_copy = (char *)malloc(buffer_size * sizeof(char));
+  strncpy(buffer_copy, (char *)buffer, buffer_size);
+
+
   switch (flag) {
     case NOTIFICATION_OK:
+      
       LOG_INFO("NOTIFICATION RECEIVED\n");
-      sleeping_mode = !sleeping_mode;
+
+      LOG_DBG("Payload: %s\n", buffer);
+
+      parse_senml_payload(buffer_copy, buffer_size, &payload); 
+
+      // If all the leds are closed, the person is not in the room anymore -> sleeping mode is on
+      // If the red led is open, hvac is on -> sleeping mode is off
+      // If the green led is open, the hvac is off -> sleeping mode is off
+      // If the yellow led is open, the person is waiting -> sleeping mode is off
+      
+      int led_value = 0; // PARSE THE JSON
+      sleeping_mode = false;
+      hvac_status = false;
+      if(led_value == LEDS_CONF_OFF)
+        sleeping_mode = true;
+      if(led_value == LEDS_CONF_RED)
+        hvac_status = true;
+
       if(!sleeping_mode)
-        PROCESS_POLL(&co_sensor_process);
+        process_poll(&co_sensor_process);
+
       break;
+
     case OBSERVE_OK: /* server accepeted observation request */
       LOG_INFO("OBSERVE_OK\n");
       break;
     default: 
       break;
   }
+
 }
 
 void client_chunk_handler(coap_message_t *response){
@@ -77,8 +115,11 @@ void client_chunk_handler(coap_message_t *response){
 
 
 static char ip_vault_status[40];
+static coap_endpoint_t coap_vault_status;
 
 void resource_request_handler(coap_message_t *response){
+  const uint8_t *buffer = NULL;
+
 	if(response == NULL) {
 		LOG_ERR("Request timed out\n");
 	}
@@ -89,7 +130,8 @@ void resource_request_handler(coap_message_t *response){
 		LOG_INFO("IP received successfully\n");
 		retry_requests = 0;		
 	
-    coap_get_payload(response, &ip_vault_status);
+    coap_get_payload(response, &buffer);
+    strncpy(ip_vault_status, (char *)buffer, response->payload_len);
 
 		return;
 	}
@@ -99,16 +141,6 @@ void resource_request_handler(coap_message_t *response){
 		retry_requests=-1;
 }
 
-
-PROCESS(co_sensor_process, "CO sensor process");
-AUTOSTART_PROCESSES(&co_sensor_process);
-
-// Handler for the notifications sent by the vault status
-void vault_status_handler(coap_message_t *response){
-  sleeping_mode = !sleeping_mode;
-  if(!sleeping_mode) // Prima il processo stava dormendo
-    PROCESS_POLL(&co_sensor_process);
-}
 
 PROCESS_THREAD(co_sensor_process, ev, data)
 {
@@ -153,12 +185,13 @@ PROCESS_THREAD(co_sensor_process, ev, data)
 		}
 	}
 
-  // Observing the vault status
-  vault_status_resource = coap_obs_request_registration(ip_vault_status, 
-                                                        COAP_PORT,
-                                                        "/"VAULT_STATUS_RESOURCE, 
-                                                        notification_callback,
-                                                        NULL);
+
+  char coap_endpoint[100];
+  snprintf(coap_endpoint, 100, "coap://[%s]:5683", ip_vault_status);  
+  coap_endpoint_parse(coap_endpoint, strlen(coap_endpoint), &coap_vault_status);
+
+  // Observing the vault status 
+  vault_status_resource = coap_obs_request_registration(&coap_vault_status, "/"VAULT_STATUS_RESOURCE, notification_callback, NULL);
 
   coap_activate_resource(&res_co, RESOURCE_NAME);
 
@@ -182,7 +215,5 @@ PROCESS_THREAD(co_sensor_process, ev, data)
   PROCESS_END();
 }
 
-
-// INSERIRE VALORI CASUALI DENTRO RISORSA NEL TRIGGER
 // FARE SERVER DISCOVERY 
 // CERCARE DI COLLEGARE IL TUTTO

@@ -32,5 +32,6 @@ typedef struct {
 
 int create_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *payload);
 void get_mac_address(char *mac_str);
+int parse_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *payload);
 
 #endif  // JSON_SENML_H

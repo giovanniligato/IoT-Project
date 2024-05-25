@@ -26,18 +26,6 @@ public class CoAPRegistration extends CoapResource {
 
         String resourceExposed = new String(request);
 
-/*        String json = new String(request);
-
-        // Parse JSON
-        Gson gson = new Gson();
-        try {
-            RegistrationRequest registrationRequest = gson.fromJson(json, RegistrationRequest.class);
-        }
-        catch (Exception e) {
-            exchange.respond(CoAP.ResponseCode.BAD_REQUEST);
-            return;
-        }
-*/
         // IP address of the iot_node
         String ip = exchange.getSourceAddress().toString().substring(1);
 

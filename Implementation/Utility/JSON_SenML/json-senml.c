@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include "json-senml.h"
 
+#define MAX_MEASUREMENTS 5 // Definisci il numero massimo di misurazioni che il buffer può contenere
+
 void get_mac_address(char *mac_str) {
     
     uint8_t mac[6];
@@ -81,3 +83,122 @@ int create_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pa
 
     return offset;
 }
+
+int parse_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *payload) {
+    if (buffer == NULL || payload == NULL) {
+        return -1;
+    }
+
+    // Inizializza il payload
+    payload->measurements = (senml_measurement_t *)malloc(MAX_MEASUREMENTS * sizeof(senml_measurement_t));
+    if (payload->measurements == NULL) {
+        return -1;
+    }
+
+    payload->num_measurements = 0;
+    char *pos = buffer;
+    char *end = buffer + buffer_size;
+    
+    while (pos < end && *pos != '\0') {
+        // Cerca il campo "bn"
+        if (strncmp(pos, "\"bn\"", 4) == 0) {
+            pos += 5;
+            char *start = strchr(pos, '\"');
+            if (start == NULL) return -1;
+            char *finish = strchr(start + 1, '\"');
+            if (finish == NULL) return -1;
+            *finish = '\0';
+            payload->base_name = strdup(start + 1);
+            pos = finish + 1;
+        }
+        // Cerca il campo "bt"
+        else if (strncmp(pos, "\"bt\"", 4) == 0) {
+            pos += 5;
+            payload->base_time = atof(pos);
+            pos = strchr(pos, ',');
+        }
+        // Cerca il campo "ver"
+        else if (strncmp(pos, "\"ver\"", 5) == 0) {
+            pos += 6;
+            payload->version = atoi(pos);
+            pos = strchr(pos, ',');
+        }
+        // Cerca il campo "e"
+        else if (strncmp(pos, "\"e\"", 3) == 0) {
+            pos += 4;
+            if (*pos != '[') return -1;
+            pos++;
+            while (*pos != ']' && pos < end) {
+                if (payload->num_measurements >= MAX_MEASUREMENTS) return -1;
+                
+                senml_measurement_t *measurement = &payload->measurements[payload->num_measurements];
+                memset(measurement, 0, sizeof(senml_measurement_t));
+                
+                // Cerca il campo "n"
+                if (strncmp(pos, "{\"n\"", 4) == 0) {
+                    pos += 5;
+                    char *start = strchr(pos, '\"');
+                    if (start == NULL) return -1;
+                    char *finish = strchr(start + 1, '\"');
+                    if (finish == NULL) return -1;
+                    *finish = '\0';
+                    measurement->name = strdup(start + 1);
+                    pos = finish + 2;
+                }
+
+                // Cerca il campo "u"
+                if (strncmp(pos, "\"u\"", 3) == 0) {
+                    pos += 4;
+                    char *start = strchr(pos, '\"');
+                    if (start == NULL) return -1;
+                    char *finish = strchr(start + 1, '\"');
+                    if (finish == NULL) return -1;
+                    *finish = '\0';
+                    measurement->unit = strdup(start + 1);
+                    pos = finish + 2;
+                }
+                
+                // Cerca il campo "v"
+                if (strncmp(pos, "\"v\"", 3) == 0) {
+                    pos += 4;
+                    measurement->type = SENML_TYPE_V;
+                    measurement->value.v = atof(pos);
+                    pos = strchr(pos, ',');
+                }
+                // Cerca il campo "bv"
+                else if (strncmp(pos, "\"bv\"", 4) == 0) {
+                    pos += 5;
+                    measurement->type = SENML_TYPE_BV;
+                    measurement->value.bv = (strncmp(pos, "true", 4) == 0);
+                    pos = strchr(pos, ',');
+                }
+                // Cerca il campo "sv"
+                else if (strncmp(pos, "\"sv\"", 4) == 0) {
+                    pos += 5;
+                    char *start = strchr(pos, '\"');
+                    if (start == NULL) return -1;
+                    char *finish = strchr(start + 1, '\"');
+                    if (finish == NULL) return -1;
+                    *finish = '\0';
+                    measurement->type = SENML_TYPE_SV;
+                    measurement->value.sv = strdup(start + 1);
+                    pos = finish + 2;
+                }
+                
+                payload->num_measurements++;
+                
+                // Trova la fine di questa misurazione
+                pos = strchr(pos, '}');
+                if (pos == NULL) return -1;
+                pos++;
+                if (*pos == ',') pos++;
+            }
+        }
+        
+        pos++;
+    }
+
+    return 0;
+}
+
+
