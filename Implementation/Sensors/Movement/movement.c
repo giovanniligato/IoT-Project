@@ -76,6 +76,8 @@ PROCESS_THREAD(pir_motion_sensor_process, ev, data)
   gpio_hal_arch_pin_set_input(PIR_SENSOR_PORT, PIR_SENSOR_PIN);
   #endif
   	
+  coap_activate_resource(&res_movement, RESOURCE_NAME);
+  
   while(retry_requests!=0){
 
     
@@ -95,7 +97,6 @@ PROCESS_THREAD(pir_motion_sensor_process, ev, data)
 
 	}
 
-  coap_activate_resource(&res_movement, RESOURCE_NAME);
 
   // Imposta un timer per verificare lo stato del sensore ogni secondo
   etimer_set(&timer, CLOCK_SECOND);

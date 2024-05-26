@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <locale.h>
+// #include "debug_sleep.h"
+// #include "sys/clock.h"
 
 #ifndef COOJA
 #include <nrfx.h>
@@ -42,6 +45,12 @@ int create_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pa
         return -1;
     }
 
+    // Salva il locale corrente
+    char *current_locale = setlocale(LC_NUMERIC, NULL);
+
+    // Imposta il locale su "C" per usare il punto come separatore decimale
+    setlocale(LC_NUMERIC, "C");
+
     size_t offset = 0;
     offset += snprintf(buffer + offset, buffer_size - offset, "{\"e\":[");
 
@@ -66,6 +75,8 @@ int create_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pa
                                    payload->measurements[i].name, payload->measurements[i].value.sv, payload->measurements[i].unit);
                 break;
             default:
+                // Ripristina il locale originale
+                setlocale(LC_NUMERIC, current_locale);
                 return -1;
         }
 
@@ -77,6 +88,9 @@ int create_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pa
     offset += snprintf(buffer + offset, buffer_size - offset, "],\"bn\":\"%s\",\"bt\":%.0f,\"ver\":%d}", 
                        payload->base_name, payload->base_time, payload->version);
 
+    // Ripristina il locale originale
+    setlocale(LC_NUMERIC, current_locale);
+    
     if (offset >= buffer_size) {
         return -1; // Error or buffer overflow
     }
@@ -98,7 +112,7 @@ int parse_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pay
     payload->num_measurements = 0;
     char *pos = buffer;
     char *end = buffer + buffer_size;
-    
+
     while (pos < end && *pos != '\0') {
         // Cerca il campo "bn"
         if (strncmp(pos, "\"bn\"", 4) == 0) {
@@ -121,7 +135,9 @@ int parse_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pay
         else if (strncmp(pos, "\"ver\"", 5) == 0) {
             pos += 6;
             payload->version = atoi(pos);
-            pos = strchr(pos, ',');
+            //pos = strchr(pos, ',');
+            printf("pos: %s\n", pos);
+            return 0;
         }
         // Cerca il campo "e"
         else if (strncmp(pos, "\"e\"", 3) == 0) {
@@ -129,6 +145,8 @@ int parse_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pay
             if (*pos != '[') return -1;
             pos++;
             while (*pos != ']' && pos < end) {
+                printf(" VEDIAMO %s\n", pos);
+
                 if (payload->num_measurements >= MAX_MEASUREMENTS) return -1;
                 
                 senml_measurement_t *measurement = &payload->measurements[payload->num_measurements];
@@ -194,11 +212,11 @@ int parse_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pay
                 if (*pos == ',') pos++;
             }
         }
-        
+
         pos++;
     }
 
+    printf("VERSIONE: %d", payload->version);
+
     return 0;
 }
-
-
