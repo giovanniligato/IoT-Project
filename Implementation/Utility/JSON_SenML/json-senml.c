@@ -67,7 +67,6 @@ int create_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pa
                 format = "{\"n\":\"%s\",\"bv\":%s}";
                 offset += snprintf(buffer + offset, buffer_size - offset, format,
                                    payload->measurements[i].name, payload->measurements[i].value.bv ? "true" : "false");
-                printf("BV: %s\n", payload->measurements[i].value.bv ? "true" : "false");
                 break;
             case SENML_TYPE_SV:
                 format = "{\"n\":\"%s\",\"sv\":\"%s\",\"u\":\"%s\"}";
@@ -135,9 +134,9 @@ int parse_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pay
         else if (strncmp(pos, "\"ver\"", 5) == 0) {
             pos += 6;
             payload->version = atoi(pos);
-            //pos = strchr(pos, ',');
-            printf("pos: %s\n", pos);
-            return 0;
+            while (*pos != '\0' && *pos != ',' && *pos != '}') {
+                pos++;
+            }
         }
         // Cerca il campo "e"
         else if (strncmp(pos, "\"e\"", 3) == 0) {
@@ -145,7 +144,6 @@ int parse_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pay
             if (*pos != '[') return -1;
             pos++;
             while (*pos != ']' && pos < end) {
-                printf(" VEDIAMO %s\n", pos);
 
                 if (payload->num_measurements >= MAX_MEASUREMENTS) return -1;
                 
@@ -188,8 +186,12 @@ int parse_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pay
                     pos += 5;
                     measurement->type = SENML_TYPE_BV;
                     measurement->value.bv = (strncmp(pos, "true", 4) == 0);
-                    pos = strchr(pos, ',');
+                    // pos = strchr(pos, ',');
+                    while (*pos != '\0' && *pos != ',' && *pos != '}') {
+                        pos++;
+                    }
                 }
+
                 // Cerca il campo "sv"
                 else if (strncmp(pos, "\"sv\"", 4) == 0) {
                     pos += 5;
@@ -215,8 +217,6 @@ int parse_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pay
 
         pos++;
     }
-
-    printf("VERSIONE: %d", payload->version);
 
     return 0;
 }

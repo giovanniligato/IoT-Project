@@ -154,7 +154,7 @@
       <skin>org.contikios.cooja.plugins.skins.UDGMVisualizerSkin</skin>
       <viewport>2.7502399174783188 0.0 0.0 2.7502399174783188 21.012505932413 41.2278971340705</viewport>
     </plugin_config>
-    <bounds x="1" y="0" height="400" width="400" />
+    <bounds x="1" y="0" height="400" width="400" z="1" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.LogListener
@@ -186,6 +186,6 @@
       <port>60001</port>
       <bound>false</bound>
     </plugin_config>
-    <bounds x="400" y="0" height="116" width="362" z="1" />
+    <bounds x="400" y="0" height="116" width="362" />
   </plugin>
 </simconf>
