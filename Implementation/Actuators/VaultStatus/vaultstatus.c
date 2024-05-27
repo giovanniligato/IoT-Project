@@ -82,7 +82,8 @@ static void movement_callback(coap_observee_t *obs, void *notification, coap_not
       // Trigger the notification of the vault status resource
       res_vaultstatus.trigger();
       
-      free(payload.measurements);
+      if(payload.measurements != NULL)
+        free(payload.measurements);
 
       break;        
 
@@ -94,7 +95,8 @@ static void movement_callback(coap_observee_t *obs, void *notification, coap_not
       break;
   }
 
-  free(buffer_copy);
+  if(buffer_copy != NULL)
+    free(buffer_copy);
 
 }
 

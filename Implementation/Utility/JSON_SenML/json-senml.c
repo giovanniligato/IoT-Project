@@ -59,7 +59,7 @@ int create_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pa
 
         switch (payload->measurements[i].type) {
             case SENML_TYPE_V:
-                format = "{\"n\":\"%s\",\"v\":%.2f,\"u\":\"%s\"}";
+                format = "{\"n\":\"%s\",\"v\":%.5f,\"u\":\"%s\"}";
                 offset += snprintf(buffer + offset, buffer_size - offset, format,
                                    payload->measurements[i].name, payload->measurements[i].value.v, payload->measurements[i].unit);
                 break;

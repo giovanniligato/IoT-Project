@@ -85,7 +85,8 @@ static void notification_callback(coap_observee_t *obs, void *notification, coap
         process_poll(&co_sensor_process);
       }
 
-      free(payload.measurements);
+      if(payload.measurements != NULL)
+        free(payload.measurements);
       
       break;
 
@@ -96,7 +97,8 @@ static void notification_callback(coap_observee_t *obs, void *notification, coap
       break;
   }
 
-  free(buffer_copy);
+  if(buffer_copy != NULL)
+    free(buffer_copy);
 
 }
 

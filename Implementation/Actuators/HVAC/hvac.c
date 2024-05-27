@@ -76,7 +76,8 @@ static void co_callback(coap_observee_t *obs, void *notification, coap_notificat
         co_received = temperature_received = humidity_received = false;
       }
 
-      free(payload.measurements);
+      if(payload.measurements != NULL)
+        free(payload.measurements);
 
       break;        
 
@@ -88,7 +89,8 @@ static void co_callback(coap_observee_t *obs, void *notification, coap_notificat
       break;
   }
 
-  free(buffer_copy);
+  if(buffer_copy != NULL)
+    free(buffer_copy);
 
 }
 
@@ -126,7 +128,8 @@ static void temperatureandhumidity_callback(coap_observee_t *obs, void *notifica
         co_received = temperature_received = humidity_received = false;
       }
 
-      free(payload.measurements);
+      if(payload.measurements != NULL)
+        free(payload.measurements);
 
       break;        
 
@@ -138,7 +141,8 @@ static void temperatureandhumidity_callback(coap_observee_t *obs, void *notifica
       break;
   }
 
-  free(buffer_copy);
+  if(buffer_copy != NULL)
+    free(buffer_copy);
 
 }
 
