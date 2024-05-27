@@ -30,13 +30,15 @@ EVENT_RESOURCE(res_co,
 static double co_level = -1.0;
 bool hvac_status = false;
 
-// Fare funzione di parsing per JSON perché per adesso abbiamo solo funzione che crea il JSON
-
 static void
 res_event_handler(void)
 {
     // New CO level measurement
-    co_level = generate_random_number(MIN_CO_LEVEL, MAX_CO_LEVEL, co_level, MAX_PERCENTAGE_VARIATION, hvac_status);
+    if(co_level < 0) 
+        co_level = init_random_number(MIN_CO_LEVEL, MAX_CO_LEVEL);
+    else
+        co_level = generate_random_number(MIN_CO_LEVEL, MAX_CO_LEVEL, co_level, MAX_PERCENTAGE_VARIATION, hvac_status);
+    
     LOG_DBG("New CO level: %f\n", co_level);
     
     // Notify all the observers
@@ -47,10 +49,7 @@ res_event_handler(void)
 static void
 res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
-    if(co_level < 0) {
-        co_level = init_random_number(MIN_CO_LEVEL, MAX_CO_LEVEL);
-    }
-
+    
     senml_measurement_t measurements[1];
     measurements[0].name = "co";
     measurements[0].type = SENML_TYPE_V;

@@ -92,6 +92,8 @@ static void movement_callback(coap_observee_t *obs, void *notification, coap_not
       break;
   }
 
+  free(buffer_copy);
+
 }
 
 void client_chunk_handler(coap_message_t *response){

@@ -22,7 +22,7 @@
 #define VAULTSTATUS_RESOURCE "vaultstatus"
 #define COAP_PORT 5683
 
-#define RESOURCE_NAME "co"
+#define RESOURCE_NAME "temperatureandhumidity"
 #define MAX_REQUESTS 5
 
 #define SLEEP_INTERVAL 15*CLOCK_SECOND
@@ -31,8 +31,7 @@
 
 #define LEDS_CONF_OFF 5
 
-
-extern coap_resource_t res_co;
+extern coap_resource_t res_temperatureandhumidity;
 static struct etimer sleep_timer;
 
 static coap_endpoint_t coap_server;
@@ -46,8 +45,8 @@ extern bool hvac_status;
 // Observe the resource 
 static coap_observee_t *vaultstatus_resource;
 
-PROCESS(co_sensor_process, "CO sensor process");
-AUTOSTART_PROCESSES(&co_sensor_process);
+PROCESS(temperatureandhumidity_sensor_process, "TemperatureAndHumidity sensor process");
+AUTOSTART_PROCESSES(&temperatureandhumidity_sensor_process);
 
 static void notification_callback(coap_observee_t *obs, void *notification, coap_notification_flag_t flag)
 {
@@ -62,7 +61,7 @@ static void notification_callback(coap_observee_t *obs, void *notification, coap
   switch (flag) {
     case NOTIFICATION_OK:
       
-      LOG_DBG("NOTIFICATION RECEIVED in CO Sensor: %s\n", buffer_copy);
+      LOG_DBG("NOTIFICATION RECEIVED in TemperatureAndHumidity Sensor: %s\n", buffer_copy);
 
       parse_senml_payload(buffer_copy, buffer_size, &payload); 
 
@@ -82,7 +81,7 @@ static void notification_callback(coap_observee_t *obs, void *notification, coap
       // printf("Sleeping mode: %d\n", sleeping_mode);
 
       if(!sleeping_mode){
-        process_poll(&co_sensor_process);
+        process_poll(&temperatureandhumidity_sensor_process);
       }
       break;
 
@@ -145,13 +144,13 @@ void resource_request_handler(coap_message_t *response){
 }
 
 
-PROCESS_THREAD(co_sensor_process, ev, data)
+PROCESS_THREAD(temperatureandhumidity_sensor_process, ev, data)
 {
   static struct etimer timer;
 
   PROCESS_BEGIN();
 
-  coap_activate_resource(&res_co, RESOURCE_NAME);
+  coap_activate_resource(&res_temperatureandhumidity, RESOURCE_NAME);
 
   while(retry_requests!=0){
 
@@ -209,7 +208,7 @@ PROCESS_THREAD(co_sensor_process, ev, data)
     else{
       PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
       if(!sleeping_mode){
-        res_co.trigger();
+        res_temperatureandhumidity.trigger();
         etimer_reset(&timer);
       }
     }
