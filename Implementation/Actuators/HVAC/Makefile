@@ -1,9 +1,14 @@
-CONTIKI_PROJECT = vaultstatus
+CONTIKI_PROJECT = hvac
 all: $(CONTIKI_PROJECT)
 
 # Include CoAP resources
 MODULES_REL += ./resources
 MODULES_REL += ../../Utility/JSON_SenML
+MODULES_REL += ../../../MachineLearning
+
+MODULES_REL += /home/iot_ubuntu_intel/.local/lib/python3.10/site-packages/emlearn
+TARGET_LIBFILES += -lm
+INC += /home/iot_ubuntu_intel/.local/lib/python3.10/site-packages/emlearn
 
 CONTIKI=../../../../contiki-ng
 

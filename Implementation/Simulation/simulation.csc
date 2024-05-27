@@ -175,6 +175,38 @@
         </interface_config>
       </mote>
     </motetype>
+    <motetype>
+      org.contikios.cooja.contikimote.ContikiMoteType
+      <description>HVAC Actuator</description>
+      <source>[CONFIG_DIR]/../Actuators/HVAC/hvac.c</source>
+      <commands>$(MAKE) -j$(CPUS) hvac.cooja TARGET=cooja</commands>
+      <moteinterface>org.contikios.cooja.interfaces.Position</moteinterface>
+      <moteinterface>org.contikios.cooja.interfaces.Battery</moteinterface>
+      <moteinterface>org.contikios.cooja.contikimote.interfaces.ContikiVib</moteinterface>
+      <moteinterface>org.contikios.cooja.contikimote.interfaces.ContikiMoteID</moteinterface>
+      <moteinterface>org.contikios.cooja.contikimote.interfaces.ContikiRS232</moteinterface>
+      <moteinterface>org.contikios.cooja.contikimote.interfaces.ContikiBeeper</moteinterface>
+      <moteinterface>org.contikios.cooja.interfaces.IPAddress</moteinterface>
+      <moteinterface>org.contikios.cooja.contikimote.interfaces.ContikiRadio</moteinterface>
+      <moteinterface>org.contikios.cooja.contikimote.interfaces.ContikiButton</moteinterface>
+      <moteinterface>org.contikios.cooja.contikimote.interfaces.ContikiPIR</moteinterface>
+      <moteinterface>org.contikios.cooja.contikimote.interfaces.ContikiClock</moteinterface>
+      <moteinterface>org.contikios.cooja.contikimote.interfaces.ContikiLED</moteinterface>
+      <moteinterface>org.contikios.cooja.contikimote.interfaces.ContikiCFS</moteinterface>
+      <moteinterface>org.contikios.cooja.contikimote.interfaces.ContikiEEPROM</moteinterface>
+      <moteinterface>org.contikios.cooja.interfaces.Mote2MoteRelations</moteinterface>
+      <moteinterface>org.contikios.cooja.interfaces.MoteAttributes</moteinterface>
+      <mote>
+        <interface_config>
+          org.contikios.cooja.interfaces.Position
+          <pos x="69.78599830962423" y="44.274595551904326" />
+        </interface_config>
+        <interface_config>
+          org.contikios.cooja.contikimote.interfaces.ContikiMoteID
+          <id>6</id>
+        </interface_config>
+      </mote>
+    </motetype>
   </simulation>
   <plugin>
     org.contikios.cooja.plugins.Visualizer
@@ -184,7 +216,7 @@
       <skin>org.contikios.cooja.plugins.skins.GridVisualizerSkin</skin>
       <skin>org.contikios.cooja.plugins.skins.TrafficVisualizerSkin</skin>
       <skin>org.contikios.cooja.plugins.skins.UDGMVisualizerSkin</skin>
-      <viewport>3.33911790821055 0.0 0.0 3.33911790821055 154.5299644603905 99.97856860643431</viewport>
+      <viewport>5.280095603464107 0.0 0.0 5.280095603464107 -100.52556440682214 -10.979863859579892</viewport>
     </plugin_config>
     <bounds x="1" y="0" height="400" width="400" />
   </plugin>
@@ -205,6 +237,7 @@
       <mote>2</mote>
       <mote>3</mote>
       <mote>4</mote>
+      <mote>5</mote>
       <showRadioRXTX />
       <showRadioHW />
       <showLEDs />

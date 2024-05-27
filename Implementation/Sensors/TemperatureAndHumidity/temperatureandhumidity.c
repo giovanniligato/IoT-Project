@@ -83,6 +83,9 @@ static void notification_callback(coap_observee_t *obs, void *notification, coap
       if(!sleeping_mode){
         process_poll(&temperatureandhumidity_sensor_process);
       }
+
+      free(payload.measurements);
+      
       break;
 
     case OBSERVE_OK: /* server accepeted observation request */

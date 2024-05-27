@@ -82,6 +82,8 @@ static void movement_callback(coap_observee_t *obs, void *notification, coap_not
       // Trigger the notification of the vault status resource
       res_vaultstatus.trigger();
       
+      free(payload.measurements);
+
       break;        
 
     case OBSERVE_OK: /* server accepeted observation request */

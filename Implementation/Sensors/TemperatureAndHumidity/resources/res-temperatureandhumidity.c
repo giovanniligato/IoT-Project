@@ -96,7 +96,7 @@ res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buff
         coap_set_payload(response, buffer, length);
         
         // Printing the payload for debugging purposes
-        LOG_DBG("Sending the payload: %s\n", buffer);
+        LOG_DBG("[TemperatureAndHumidity] Sending the payload: %s\n", buffer);
     }
 }
 

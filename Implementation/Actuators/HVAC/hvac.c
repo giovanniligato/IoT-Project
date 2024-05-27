@@ -1,0 +1,307 @@
+#include "contiki.h"
+#include "coap-engine.h"
+#include "coap-blocking-api.h"
+#include "sys/etimer.h"
+#include "sys/log.h"
+#include "os/dev/leds.h"
+#include "json-senml.h"
+#include "coap-observe-client.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+#define LOG_MODULE "App"
+#define LOG_LEVEL LOG_LEVEL_APP
+
+#define COAP_SERVER_URL "coap://[fd00::1]:5683"
+#define REGISTRATION_RESOURCE "/register"
+#define DISCOVERY_RESOURCE "/discovery"
+
+#define TEMPERATUREANDHUMIDITY_RESOURCE "temperatureandhumidity"
+#define CO_RESOURCE "co"
+#define COAP_PORT 5683
+
+#define RESOURCE_NAME "hvac"
+#define MAX_REQUESTS 5
+
+#define SLEEP_INTERVAL 15*CLOCK_SECOND
+
+extern coap_resource_t res_hvac;
+static struct etimer sleep_timer;
+
+static coap_endpoint_t coap_server;
+static coap_message_t request[1];       
+static int retry_requests = MAX_REQUESTS;
+
+// Observe the temperatureandhumidity resource 
+static coap_observee_t *co_resource;
+// Observe the co resource
+static coap_observee_t *temperatureandhumidity_resource;
+
+double current_temperature = -1.0;
+double current_humidity = -1.0;
+double current_co = -1.0;
+
+static bool temperature_received = false;
+static bool humidity_received = false;
+static bool co_received = false;
+
+PROCESS(hvac_process, "HVAC process");
+AUTOSTART_PROCESSES(&hvac_process);
+
+static void co_callback(coap_observee_t *obs, void *notification, coap_notification_flag_t flag)
+{
+  senml_payload_t payload;
+  const uint8_t *buffer = NULL;
+
+  int buffer_size = coap_get_payload(notification, &buffer);
+  char *buffer_copy = (char *)malloc(buffer_size * sizeof(char));
+  strncpy(buffer_copy, (char *)buffer, buffer_size+1);
+
+  switch (flag) {
+    case NOTIFICATION_OK:
+
+      // Da movement riceviamo il booleano vault_activated
+
+      LOG_DBG("NOTIFICATION RECEIVED in HVAC by CO sensor: %s\n", buffer_copy);
+ 
+      parse_senml_payload(buffer_copy, buffer_size, &payload); 
+
+      current_co = payload.measurements[0].value.v;
+      co_received = true;
+
+      if(co_received && temperature_received && humidity_received){
+        res_hvac.trigger();
+        co_received = temperature_received = humidity_received = false;
+      }
+
+      free(payload.measurements);
+
+      break;        
+
+    case OBSERVE_OK: /* server accepeted observation request */
+      LOG_INFO("OBSERVE_OK\n");
+      
+      break;
+    default: 
+      break;
+  }
+
+  free(buffer_copy);
+
+}
+
+static void temperatureandhumidity_callback(coap_observee_t *obs, void *notification, coap_notification_flag_t flag)
+{
+  senml_payload_t payload;
+  const uint8_t *buffer = NULL;
+
+  int buffer_size = coap_get_payload(notification, &buffer);
+  char *buffer_copy = (char *)malloc(buffer_size * sizeof(char));
+  strncpy(buffer_copy, (char *)buffer, buffer_size+1);
+
+  switch (flag) {
+    case NOTIFICATION_OK:
+
+      // Da movement riceviamo il booleano vault_activated
+
+      LOG_DBG("NOTIFICATION RECEIVED in HVAC by TemperatureAndHumidity sensor: %s\n", buffer_copy);
+ 
+      parse_senml_payload(buffer_copy, buffer_size, &payload); 
+
+      for(int i = 0; i < payload.num_measurements; i++){
+        if(strcmp(payload.measurements[i].name, "temperature") == 0){
+          current_temperature = payload.measurements[i].value.v;
+          temperature_received = true;
+        }
+        else if(strcmp(payload.measurements[i].name, "humidity") == 0){
+          current_humidity = payload.measurements[i].value.v;
+          humidity_received = true;
+        }
+      }
+
+      if(co_received && temperature_received && humidity_received){
+        res_hvac.trigger();
+        co_received = temperature_received = humidity_received = false;
+      }
+
+      free(payload.measurements);
+
+      break;        
+
+    case OBSERVE_OK: /* server accepeted observation request */
+      LOG_INFO("OBSERVE_OK\n");
+      
+      break;
+    default: 
+      break;
+  }
+
+  free(buffer_copy);
+
+}
+
+void client_chunk_handler(coap_message_t *response){
+  
+	if(response == NULL) {
+		LOG_ERR("Request timed out\n");
+	}
+  else if(response->code != 65){
+		LOG_ERR("Error: %d\n",response->code);	
+	}
+  else{
+		LOG_INFO("Registration successful\n");
+		retry_requests = 0;		
+		return;
+	}
+	
+	retry_requests--;
+	if(retry_requests==0)
+		retry_requests=-1;
+}
+
+
+static char ip_co[40];
+static coap_endpoint_t coap_co;
+
+static char ip_temperatureandhumidity[40];
+static coap_endpoint_t coap_temperatureandhumidity;
+
+void co_request_handler(coap_message_t *response){
+  const uint8_t *buffer = NULL;
+
+	if(response == NULL) {
+		LOG_ERR("Request timed out\n");
+	}
+  else if(response->code != 69){
+		LOG_ERR("Error: %d\n",response->code);	
+	}
+  else{
+		LOG_INFO("IP received successfully\n");
+		retry_requests = 0;		
+	
+    coap_get_payload(response, &buffer);
+    strncpy(ip_co, (char *)buffer, response->payload_len);
+
+		return;
+	}
+
+	retry_requests--;
+	if(retry_requests==0)
+		retry_requests=-1;
+}
+
+void temperatureandhumidity_request_handler(coap_message_t *response){
+  const uint8_t *buffer = NULL;
+
+	if(response == NULL) {
+		LOG_ERR("Request timed out\n");
+	}
+  else if(response->code != 69){
+		LOG_ERR("Error: %d\n",response->code);	
+	}
+  else{
+		LOG_INFO("IP received successfully\n");
+		retry_requests = 0;		
+	
+    coap_get_payload(response, &buffer);
+    strncpy(ip_temperatureandhumidity, (char *)buffer, response->payload_len);
+
+		return;
+	}
+
+	retry_requests--;
+	if(retry_requests==0)
+		retry_requests=-1;
+}
+
+
+PROCESS_THREAD(hvac_process, ev, data)
+{
+  PROCESS_BEGIN();
+  
+  coap_activate_resource(&res_hvac, RESOURCE_NAME);
+
+  while(retry_requests!=0){
+
+    // Registration to the CoAP server
+		coap_endpoint_parse(COAP_SERVER_URL, strlen(COAP_SERVER_URL), &coap_server);
+		coap_init_message(request, COAP_TYPE_CON, COAP_POST, 0);
+		coap_set_header_uri_path(request, REGISTRATION_RESOURCE);
+		coap_set_payload(request, (uint8_t *)RESOURCE_NAME, sizeof(RESOURCE_NAME) - 1);
+	
+		COAP_BLOCKING_REQUEST(&coap_server, request, client_chunk_handler);
+    
+		if(retry_requests == -1){		 
+			etimer_set(&sleep_timer, SLEEP_INTERVAL);
+			PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&sleep_timer));
+			retry_requests = MAX_REQUESTS;
+		}
+	}
+
+  retry_requests = MAX_REQUESTS;
+
+  // Requesting the IP of the node where there is the temperatureandhumidity sensor
+  while(retry_requests!=0){
+
+		coap_init_message(request, COAP_TYPE_CON, COAP_GET, 0);
+		coap_set_header_uri_path(request, DISCOVERY_RESOURCE);
+    // Add uri query to the request
+    coap_set_header_uri_query(request, "requested_resource="TEMPERATUREANDHUMIDITY_RESOURCE);  
+    
+		COAP_BLOCKING_REQUEST(&coap_server, request, temperatureandhumidity_request_handler);
+    
+		if(retry_requests == -1){		 
+			etimer_set(&sleep_timer, SLEEP_INTERVAL);
+			PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&sleep_timer));
+			retry_requests = MAX_REQUESTS;
+		}
+	}
+
+  char coap_temperatureandhumidity_endpoint[100];
+  snprintf(coap_temperatureandhumidity_endpoint, 100, "coap://[%s]:5683", ip_temperatureandhumidity);  
+  coap_endpoint_parse(coap_temperatureandhumidity_endpoint, strlen(coap_temperatureandhumidity_endpoint), &coap_temperatureandhumidity);
+
+  // Observing the vault status 
+  temperatureandhumidity_resource = coap_obs_request_registration(&coap_temperatureandhumidity, "/"TEMPERATUREANDHUMIDITY_RESOURCE, temperatureandhumidity_callback, NULL);
+
+
+  retry_requests = MAX_REQUESTS;
+
+  // Requesting the IP of the node where there is the co sensor
+  while(retry_requests!=0){
+
+		coap_init_message(request, COAP_TYPE_CON, COAP_GET, 0);
+		coap_set_header_uri_path(request, DISCOVERY_RESOURCE);
+    // Add uri query to the request
+    coap_set_header_uri_query(request, "requested_resource="CO_RESOURCE);  
+    
+		COAP_BLOCKING_REQUEST(&coap_server, request, co_request_handler);
+    
+		if(retry_requests == -1){		 
+			etimer_set(&sleep_timer, SLEEP_INTERVAL);
+			PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&sleep_timer));
+			retry_requests = MAX_REQUESTS;
+		}
+	}
+  
+
+  char coap_co_endpoint[100];
+  snprintf(coap_co_endpoint, 100, "coap://[%s]:5683", ip_co);  
+  coap_endpoint_parse(coap_co_endpoint, strlen(coap_co_endpoint), &coap_co);
+
+  // Observing the vault status 
+  co_resource = coap_obs_request_registration(&coap_co, "/"CO_RESOURCE, co_callback, NULL);
+
+  while(1) {
+    PROCESS_YIELD();
+  }
+
+  // Stopping the observation
+  coap_obs_remove_observee(temperatureandhumidity_resource);
+  coap_obs_remove_observee(co_resource);
+
+  PROCESS_END();
+}
+
