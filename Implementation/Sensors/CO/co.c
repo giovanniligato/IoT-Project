@@ -62,15 +62,9 @@ static void notification_callback(coap_observee_t *obs, void *notification, coap
   switch (flag) {
     case NOTIFICATION_OK:
       
-      LOG_INFO("NOTIFICATION RECEIVED\n");
-
-      LOG_DBG("Payload: %s\n", buffer_copy);
-
-      LOG_INFO("SiAMO IN CO\n");
-    
+      LOG_DBG("NOTIFICATION RECEIVED in CO Sensor: %s\n", buffer_copy);
 
       parse_senml_payload(buffer_copy, buffer_size, &payload); 
-
 
       // If all the leds are closed, the person is not in the room anymore -> sleeping mode is on
       // If the red led is open, hvac is on -> sleeping mode is off
@@ -207,6 +201,7 @@ PROCESS_THREAD(co_sensor_process, ev, data)
   etimer_set(&timer, SAMPLE_INTERVAL);
 
   while(1) {
+    LOG_DBG("CO Sensor process running\n");
     if(sleeping_mode)
       PROCESS_YIELD();
     else{

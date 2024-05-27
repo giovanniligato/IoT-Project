@@ -60,11 +60,7 @@ static void movement_callback(coap_observee_t *obs, void *notification, coap_not
 
       // Da movement riceviamo il booleano vault_activated
 
-      LOG_INFO("NOTIFICATION RECEIVED\n");
-
-      LOG_DBG("Payload: %s\n", buffer);
-
-      LOG_INFO("SiAMO IN VS\n");
+      LOG_DBG("NOTIFICATION RECEIVED in VaultStatus: %s\n", buffer_copy);
 
       parse_senml_payload(buffer_copy, buffer_size, &payload); 
 

@@ -37,6 +37,7 @@ res_event_handler(void)
 {
     // New CO level measurement
     co_level = generate_random_number(MIN_CO_LEVEL, MAX_CO_LEVEL, co_level, MAX_PERCENTAGE_VARIATION, hvac_status);
+    LOG_DBG("New CO level: %f\n", co_level);
     
     // Notify all the observers
     coap_notify_observers(&res_co);
@@ -75,7 +76,7 @@ res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buff
         coap_set_payload(response, buffer, length);
         
         // Printing the payload for debugging purposes
-        LOG_DBG("Payload: %s\n", buffer);
+        LOG_DBG("Sending the payload: %s\n", buffer);
     }
 }
 
