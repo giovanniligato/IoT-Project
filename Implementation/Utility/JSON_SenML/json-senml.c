@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include "json-senml.h"
 
-#define MAX_MEASUREMENTS 5 // Definisci il numero massimo di misurazioni che il buffer può contenere
+#define MAX_MEASUREMENTS 2 // Definisci il numero massimo di misurazioni che il buffer può contenere
 
 void get_mac_address(char *mac_str) {
     

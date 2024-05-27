@@ -74,7 +74,7 @@ res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buff
     measurements[1].name = "humidity";
     measurements[1].type = SENML_TYPE_V;
     measurements[1].value.v = humidity_level;
-    measurements[1].unit = "%%RH";
+    measurements[1].unit = "%RH";
 
     char base_name[BASE_NAME_LEN];
     get_mac_address(base_name);

@@ -55,18 +55,20 @@ static void co_callback(coap_observee_t *obs, void *notification, coap_notificat
   senml_payload_t payload;
   const uint8_t *buffer = NULL;
 
-  int buffer_size = coap_get_payload(notification, &buffer);
-  char *buffer_copy = (char *)malloc(buffer_size * sizeof(char));
-  strncpy(buffer_copy, (char *)buffer, buffer_size+1);
+  int buffer_size;
+  if(notification){
+    buffer_size = coap_get_payload(notification, &buffer);
+
+  }
 
   switch (flag) {
     case NOTIFICATION_OK:
 
       // Da movement riceviamo il booleano vault_activated
 
-      LOG_DBG("NOTIFICATION RECEIVED in HVAC by CO sensor: %s\n", buffer_copy);
+      LOG_DBG("NOTIFICATION RECEIVED in HVAC by CO sensor: %s\n", buffer);
  
-      parse_senml_payload(buffer_copy, buffer_size, &payload); 
+      parse_senml_payload((char*)buffer, buffer_size, &payload); 
 
       current_co = payload.measurements[0].value.v;
       co_received = true;
@@ -76,8 +78,10 @@ static void co_callback(coap_observee_t *obs, void *notification, coap_notificat
         co_received = temperature_received = humidity_received = false;
       }
 
-      if(payload.measurements != NULL)
+      if(payload.measurements){
+        LOG_DBG("Freeing: %p\n", payload.measurements);
         free(payload.measurements);
+      }
 
       break;        
 
@@ -89,9 +93,6 @@ static void co_callback(coap_observee_t *obs, void *notification, coap_notificat
       break;
   }
 
-  if(buffer_copy != NULL)
-    free(buffer_copy);
-
 }
 
 static void temperatureandhumidity_callback(coap_observee_t *obs, void *notification, coap_notification_flag_t flag)
@@ -99,18 +100,20 @@ static void temperatureandhumidity_callback(coap_observee_t *obs, void *notifica
   senml_payload_t payload;
   const uint8_t *buffer = NULL;
 
-  int buffer_size = coap_get_payload(notification, &buffer);
-  char *buffer_copy = (char *)malloc(buffer_size * sizeof(char));
-  strncpy(buffer_copy, (char *)buffer, buffer_size+1);
+  int buffer_size;
+  if(notification){
+    buffer_size = coap_get_payload(notification, &buffer);
+
+  }
 
   switch (flag) {
     case NOTIFICATION_OK:
 
       // Da movement riceviamo il booleano vault_activated
 
-      LOG_DBG("NOTIFICATION RECEIVED in HVAC by TemperatureAndHumidity sensor: %s\n", buffer_copy);
+      LOG_DBG("NOTIFICATION RECEIVED in HVAC by TemperatureAndHumidity sensor: %s\n", buffer);
  
-      parse_senml_payload(buffer_copy, buffer_size, &payload); 
+      parse_senml_payload((char*)buffer, buffer_size, &payload); 
 
       for(int i = 0; i < payload.num_measurements; i++){
         if(strcmp(payload.measurements[i].name, "temperature") == 0){
@@ -128,8 +131,10 @@ static void temperatureandhumidity_callback(coap_observee_t *obs, void *notifica
         co_received = temperature_received = humidity_received = false;
       }
 
-      if(payload.measurements != NULL)
+      if(payload.measurements){
+        LOG_DBG("Freeing: %p\n", payload.measurements);
         free(payload.measurements);
+      }
 
       break;        
 
@@ -140,9 +145,6 @@ static void temperatureandhumidity_callback(coap_observee_t *obs, void *notifica
     default: 
       break;
   }
-
-  if(buffer_copy != NULL)
-    free(buffer_copy);
 
 }
 

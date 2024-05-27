@@ -29,7 +29,7 @@
 
 #define SAMPLE_INTERVAL 5*CLOCK_SECOND
 
-#define LEDS_CONF_OFF 5
+#define LEDS_OFF 5
 
 
 extern coap_resource_t res_co;
@@ -54,17 +54,18 @@ static void notification_callback(coap_observee_t *obs, void *notification, coap
   senml_payload_t payload;
   const uint8_t *buffer = NULL;
 
-  int buffer_size = coap_get_payload(notification, &buffer);
-  char *buffer_copy = (char *)malloc(buffer_size * sizeof(char));
-  strncpy(buffer_copy, (char *)buffer, buffer_size+1);
+  int buffer_size;
+  if(notification){
+    buffer_size = coap_get_payload(notification, &buffer);
 
+  }
 
   switch (flag) {
     case NOTIFICATION_OK:
       
-      LOG_DBG("NOTIFICATION RECEIVED in CO Sensor: %s\n", buffer_copy);
+      LOG_DBG("NOTIFICATION RECEIVED in CO Sensor: %s\n", buffer);
 
-      parse_senml_payload(buffer_copy, buffer_size, &payload); 
+      parse_senml_payload((char*)buffer, buffer_size, &payload); 
 
       // If all the leds are closed, the person is not in the room anymore -> sleeping mode is on
       // If the red led is open, hvac is on -> sleeping mode is off
@@ -74,7 +75,7 @@ static void notification_callback(coap_observee_t *obs, void *notification, coap
       int led_value = (int) payload.measurements[0].value.v;
       sleeping_mode = false;
       hvac_status = false;
-      if(led_value == LEDS_CONF_OFF)
+      if(led_value == LEDS_OFF)
         sleeping_mode = true;
       if(led_value == LEDS_CONF_RED)
         hvac_status = true;
@@ -85,8 +86,10 @@ static void notification_callback(coap_observee_t *obs, void *notification, coap
         process_poll(&co_sensor_process);
       }
 
-      if(payload.measurements != NULL)
+      if(payload.measurements){
+        LOG_DBG("Freeing: %p\n", payload.measurements);
         free(payload.measurements);
+      }
       
       break;
 
@@ -97,8 +100,6 @@ static void notification_callback(coap_observee_t *obs, void *notification, coap
       break;
   }
 
-  if(buffer_copy != NULL)
-    free(buffer_copy);
 
 }
 
