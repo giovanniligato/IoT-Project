@@ -102,13 +102,8 @@ int parse_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pay
         return -1;
     }
 
-    // Inizializza il payload
-    payload->measurements = (senml_measurement_t *)malloc(MAX_MEASUREMENTS * sizeof(senml_measurement_t));
-    if (payload->measurements == NULL) {
-        return -1;
-    }
+    int measurements_count = 0;
 
-    payload->num_measurements = 0;
     char *pos = buffer;
     char *end = buffer + buffer_size;
 
@@ -145,10 +140,9 @@ int parse_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pay
             pos++;
             while (*pos != ']' && pos < end) {
 
-                if (payload->num_measurements >= MAX_MEASUREMENTS) return -1;
-                
-                senml_measurement_t *measurement = &payload->measurements[payload->num_measurements];
-                memset(measurement, 0, sizeof(senml_measurement_t));
+                if (measurements_count >= payload->num_measurements) return -1;
+
+                senml_measurement_t *measurement = &payload->measurements[measurements_count];
                 
                 // Cerca il campo "n"
                 if (strncmp(pos, "{\"n\"", 4) == 0) {
@@ -205,7 +199,7 @@ int parse_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pay
                     pos = finish + 2;
                 }
                 
-                payload->num_measurements++;
+                measurements_count++;
                 
                 // Trova la fine di questa misurazione
                 pos = strchr(pos, '}');

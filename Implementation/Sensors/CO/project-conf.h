@@ -31,6 +31,7 @@
 #ifndef PROJECT_CONF_H_
 #define PROJECT_CONF_H_
 
+#define LOG_CONF_LEVEL_COAP LOG_LEVEL_DBG
 
 // Set the max response payload before enable fragmentation:
 

@@ -218,7 +218,7 @@
       <skin>org.contikios.cooja.plugins.skins.UDGMVisualizerSkin</skin>
       <viewport>6.3361147241569284 0.0 0.0 6.3361147241569284 -186.57467728818656 -58.82383663149581</viewport>
     </plugin_config>
-    <bounds x="1" y="0" height="400" width="400" />
+    <bounds x="1" y="0" height="400" width="400" z="4" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.LogListener
@@ -227,7 +227,7 @@
       <formatted_time />
       <coloring />
     </plugin_config>
-    <bounds x="400" y="160" height="240" width="1450" z="1" />
+    <bounds x="400" y="0" height="814" width="1450" z="2" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.TimeLine
@@ -243,7 +243,7 @@
       <showLEDs />
       <zoomfactor>500.0</zoomfactor>
     </plugin_config>
-    <bounds x="0" y="800" height="166" width="1850" z="4" />
+    <bounds x="0" y="817" height="149" width="1850" z="3" />
   </plugin>
   <plugin>
     org.contikios.cooja.serialsocket.SerialSocketServer
@@ -252,7 +252,7 @@
       <port>60001</port>
       <bound>true</bound>
     </plugin_config>
-    <bounds x="400" y="0" height="116" width="362" z="3" />
+    <bounds x="37" y="701" height="116" width="362" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.MoteInterfaceViewer
@@ -261,6 +261,6 @@
       <interface>LEDs</interface>
       <scrollpos>0,0</scrollpos>
     </plugin_config>
-    <bounds x="3" y="401" height="300" width="350" z="2" />
+    <bounds x="3" y="401" height="300" width="397" z="1" />
   </plugin>
 </simconf>

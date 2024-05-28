@@ -51,7 +51,11 @@ AUTOSTART_PROCESSES(&co_sensor_process);
 
 static void notification_callback(coap_observee_t *obs, void *notification, coap_notification_flag_t flag)
 {
-  senml_payload_t payload;
+  static senml_payload_t payload;
+  static senml_measurement_t measurements[1];
+  payload.measurements = measurements;
+  payload.num_measurements = 1;
+
   const uint8_t *buffer = NULL;
 
   int buffer_size;
@@ -65,7 +69,10 @@ static void notification_callback(coap_observee_t *obs, void *notification, coap
       
       LOG_DBG("NOTIFICATION RECEIVED in CO Sensor: %s\n", buffer);
 
-      parse_senml_payload((char*)buffer, buffer_size, &payload); 
+      if(parse_senml_payload((char*)buffer, buffer_size, &payload) == -1){
+        LOG_ERR("ERROR in parsing the payload.\n");
+        return;
+      } 
 
       // If all the leds are closed, the person is not in the room anymore -> sleeping mode is on
       // If the red led is open, hvac is on -> sleeping mode is off
@@ -86,18 +93,28 @@ static void notification_callback(coap_observee_t *obs, void *notification, coap
         process_poll(&co_sensor_process);
       }
 
-      if(payload.measurements){
-        LOG_DBG("Freeing: %p\n", payload.measurements);
-        free(payload.measurements);
-      }
-      
       break;
 
     case OBSERVE_OK: /* server accepeted observation request */
       LOG_INFO("OBSERVE_OK\n");
       break;
-    default: 
+
+    case ERROR_RESPONSE_CODE:
+      printf("[CO] ERROR_RESPONSE_CODE: %*s\n", buffer_size, (char *)buffer);
+      obs = NULL;
       break;
+    case NO_REPLY_FROM_SERVER:
+      printf("[CO] NO_REPLY_FROM_SERVER: "
+            "removing observe registration with token %x%x\n",
+            obs->token[0], obs->token[1]);
+      obs = NULL;
+      break;
+      
+
+    default: 
+      LOG_ERR("[CO] ERROR: Default in notification callback\n");
+      break;
+      
   }
 
 

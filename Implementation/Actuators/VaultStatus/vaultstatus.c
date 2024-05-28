@@ -25,11 +25,13 @@
 #define MAX_REQUESTS 5
 
 #define SLEEP_INTERVAL 15*CLOCK_SECOND
+#define HEARTBEAT_INTERVAL 60*CLOCK_SECOND
 
 #define LEDS_OFF 5
 
 extern coap_resource_t res_vaultstatus;
 static struct etimer sleep_timer;
+// static struct etimer heartbeat_timer;
 
 static coap_endpoint_t coap_server;
 static coap_message_t request[1];       
@@ -48,7 +50,11 @@ AUTOSTART_PROCESSES(&vaultstatus_process);
 
 static void movement_callback(coap_observee_t *obs, void *notification, coap_notification_flag_t flag)
 {
-  senml_payload_t payload;
+  static senml_payload_t payload;
+  static senml_measurement_t measurements[1];
+  payload.measurements = measurements;
+  payload.num_measurements = 1;
+
   const uint8_t *buffer = NULL;
 
   int buffer_size;
@@ -64,7 +70,10 @@ static void movement_callback(coap_observee_t *obs, void *notification, coap_not
 
       LOG_DBG("NOTIFICATION RECEIVED in VaultStatus: %s\n", buffer);
 
-      parse_senml_payload((char*)buffer, buffer_size, &payload); 
+      if(parse_senml_payload((char*)buffer, buffer_size, &payload) == -1){
+        LOG_ERR("ERROR in parsing the payload.\n");
+        return;
+      }
 
       // If all the leds are closed, the person is not in the room anymore -> sleeping mode is on
       // If the red led is open, hvac is on -> sleeping mode is off
@@ -84,19 +93,29 @@ static void movement_callback(coap_observee_t *obs, void *notification, coap_not
       // Trigger the notification of the vault status resource
       res_vaultstatus.trigger();
       
-      if(payload.measurements){
-        LOG_DBG("Freeing: %p\n", payload.measurements);
-        free(payload.measurements);
-      }
-
       break;        
 
     case OBSERVE_OK: /* server accepeted observation request */
       LOG_INFO("OBSERVE_OK\n");
       
       break;
-    default: 
+
+    case ERROR_RESPONSE_CODE:
+      printf("[VaultStatus] ERROR_RESPONSE_CODE: %*s\n", buffer_size, (char *)buffer);
+      obs = NULL;
       break;
+    case NO_REPLY_FROM_SERVER:
+      printf("[VaultStatus] NO_REPLY_FROM_SERVER: "
+            "removing observe registration with token %x%x\n",
+            obs->token[0], obs->token[1]);
+      obs = NULL;
+      break;
+      
+
+    default: 
+      LOG_ERR("[VaultStatus] ERROR: Default in notification callback\n");
+      break;
+
   }
 
 }
@@ -199,10 +218,15 @@ PROCESS_THREAD(vaultstatus_process, ev, data)
   // Observing the vault status 
   movement_resource = coap_obs_request_registration(&coap_movement, "/"MOVEMENT_RESOURCE, movement_callback, NULL);
 
-
+  // etimer_set(&heartbeat_timer, HEARTBEAT_INTERVAL);
 
   while(1) {
     PROCESS_YIELD();
+    // PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&heartbeat_timer));
+
+    // res_vaultstatus.trigger();
+
+    // etimer_reset(&heartbeat_timer);
   }
 
   // Stopping the observation

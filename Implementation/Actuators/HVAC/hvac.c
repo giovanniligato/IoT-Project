@@ -52,7 +52,11 @@ AUTOSTART_PROCESSES(&hvac_process);
 
 static void co_callback(coap_observee_t *obs, void *notification, coap_notification_flag_t flag)
 {
-  senml_payload_t payload;
+  static senml_payload_t payload;
+  static senml_measurement_t measurements[1];
+  payload.measurements = measurements;
+  payload.num_measurements = 1;
+
   const uint8_t *buffer = NULL;
 
   int buffer_size;
@@ -68,7 +72,10 @@ static void co_callback(coap_observee_t *obs, void *notification, coap_notificat
 
       LOG_DBG("NOTIFICATION RECEIVED in HVAC by CO sensor: %s\n", buffer);
  
-      parse_senml_payload((char*)buffer, buffer_size, &payload); 
+      if(parse_senml_payload((char*)buffer, buffer_size, &payload) == -1){
+        LOG_ERR("ERROR in parsing the payload.\n");
+        return;
+      }
 
       current_co = payload.measurements[0].value.v;
       co_received = true;
@@ -78,26 +85,40 @@ static void co_callback(coap_observee_t *obs, void *notification, coap_notificat
         co_received = temperature_received = humidity_received = false;
       }
 
-      if(payload.measurements){
-        LOG_DBG("Freeing: %p\n", payload.measurements);
-        free(payload.measurements);
-      }
-
       break;        
 
     case OBSERVE_OK: /* server accepeted observation request */
       LOG_INFO("OBSERVE_OK\n");
       
       break;
-    default: 
+    
+    case ERROR_RESPONSE_CODE:
+      printf("[HVAC-CO] ERROR_RESPONSE_CODE: %*s\n", buffer_size, (char *)buffer);
+      obs = NULL;
       break;
+    case NO_REPLY_FROM_SERVER:
+      printf("[HVAC-CO] NO_REPLY_FROM_SERVER: "
+            "removing observe registration with token %x%x\n",
+            obs->token[0], obs->token[1]);
+      obs = NULL;
+      break;
+      
+
+    default: 
+      LOG_ERR("[HVAC-CO] ERROR: Default in notification callback\n");
+      break;
+
   }
 
 }
 
 static void temperatureandhumidity_callback(coap_observee_t *obs, void *notification, coap_notification_flag_t flag)
 {
-  senml_payload_t payload;
+  static senml_payload_t payload;
+  static senml_measurement_t measurements[2];
+  payload.measurements = measurements;
+  payload.num_measurements = 2;
+
   const uint8_t *buffer = NULL;
 
   int buffer_size;
@@ -113,7 +134,10 @@ static void temperatureandhumidity_callback(coap_observee_t *obs, void *notifica
 
       LOG_DBG("NOTIFICATION RECEIVED in HVAC by TemperatureAndHumidity sensor: %s\n", buffer);
  
-      parse_senml_payload((char*)buffer, buffer_size, &payload); 
+      if(parse_senml_payload((char*)buffer, buffer_size, &payload) == -1){
+        LOG_ERR("ERROR in parsing the payload.\n");
+        return;
+      } 
 
       for(int i = 0; i < payload.num_measurements; i++){
         if(strcmp(payload.measurements[i].name, "temperature") == 0){
@@ -131,19 +155,29 @@ static void temperatureandhumidity_callback(coap_observee_t *obs, void *notifica
         co_received = temperature_received = humidity_received = false;
       }
 
-      if(payload.measurements){
-        LOG_DBG("Freeing: %p\n", payload.measurements);
-        free(payload.measurements);
-      }
-
       break;        
 
     case OBSERVE_OK: /* server accepeted observation request */
       LOG_INFO("OBSERVE_OK\n");
       
       break;
-    default: 
+
+    case ERROR_RESPONSE_CODE:
+      printf("[HVAC-Temp] ERROR_RESPONSE_CODE: %*s\n", buffer_size, (char *)buffer);
+      obs = NULL;
       break;
+    case NO_REPLY_FROM_SERVER:
+      printf("[HVAC-Temp] NO_REPLY_FROM_SERVER: "
+            "removing observe registration with token %x%x\n",
+            obs->token[0], obs->token[1]);
+      obs = NULL;
+      break;
+      
+
+    default: 
+      LOG_ERR("[HVAC-Temp] ERROR: Default in notification callback\n");
+      break;
+
   }
 
 }
@@ -269,7 +303,7 @@ PROCESS_THREAD(hvac_process, ev, data)
   snprintf(coap_temperatureandhumidity_endpoint, 100, "coap://[%s]:5683", ip_temperatureandhumidity);  
   coap_endpoint_parse(coap_temperatureandhumidity_endpoint, strlen(coap_temperatureandhumidity_endpoint), &coap_temperatureandhumidity);
 
-  // Observing the vault status 
+  // Observing the temperatureandhumidity sensor 
   temperatureandhumidity_resource = coap_obs_request_registration(&coap_temperatureandhumidity, "/"TEMPERATUREANDHUMIDITY_RESOURCE, temperatureandhumidity_callback, NULL);
 
 
@@ -297,7 +331,7 @@ PROCESS_THREAD(hvac_process, ev, data)
   snprintf(coap_co_endpoint, 100, "coap://[%s]:5683", ip_co);  
   coap_endpoint_parse(coap_co_endpoint, strlen(coap_co_endpoint), &coap_co);
 
-  // Observing the vault status 
+  // Observing the co sensor 
   co_resource = coap_obs_request_registration(&coap_co, "/"CO_RESOURCE, co_callback, NULL);
 
   while(1) {

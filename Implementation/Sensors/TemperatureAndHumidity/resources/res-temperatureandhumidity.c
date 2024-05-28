@@ -62,7 +62,7 @@ static void
 res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
     
-    senml_measurement_t measurements[2];
+    static senml_measurement_t measurements[2];
 
     // Temperature Measurement
     measurements[0].name = "temperature";
@@ -76,10 +76,10 @@ res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buff
     measurements[1].value.v = humidity_level;
     measurements[1].unit = "%RH";
 
-    char base_name[BASE_NAME_LEN];
+    static char base_name[BASE_NAME_LEN];
     get_mac_address(base_name);
 
-    senml_payload_t payload = {
+    static senml_payload_t payload = {
         .base_name = base_name,
         .base_time = 0,
         .version = 1,
@@ -91,6 +91,7 @@ res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buff
 
     if (length < 0) {
         coap_set_status_code(response, BAD_REQUEST_4_00);
+        LOG_ERR("[TemperatureAndHumidity] Error generating SenML payload\n");
     } else {
         coap_set_header_content_format(response, APPLICATION_JSON);
         coap_set_payload(response, buffer, length);
