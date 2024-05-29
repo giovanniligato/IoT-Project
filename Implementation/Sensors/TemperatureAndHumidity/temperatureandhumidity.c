@@ -214,7 +214,7 @@ PROCESS_THREAD(temperatureandhumidity_sensor_process, ev, data)
   coap_endpoint_parse(coap_endpoint, strlen(coap_endpoint), &coap_vault_status);
 
   // Observing the vault status 
-  vaultstatus_resource = coap_obs_request_registration(&coap_vault_status, "/"VAULTSTATUS_RESOURCE, notification_callback, NULL);
+  vaultstatus_resource = coap_obs_request_registration(&coap_vault_status, VAULTSTATUS_RESOURCE, notification_callback, NULL);
 
   // Imposta un timer per verificare lo stato del sensore ogni secondo
   etimer_set(&timer, SAMPLE_INTERVAL);

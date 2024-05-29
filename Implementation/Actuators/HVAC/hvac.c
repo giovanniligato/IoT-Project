@@ -304,7 +304,7 @@ PROCESS_THREAD(hvac_process, ev, data)
   coap_endpoint_parse(coap_temperatureandhumidity_endpoint, strlen(coap_temperatureandhumidity_endpoint), &coap_temperatureandhumidity);
 
   // Observing the temperatureandhumidity sensor 
-  temperatureandhumidity_resource = coap_obs_request_registration(&coap_temperatureandhumidity, "/"TEMPERATUREANDHUMIDITY_RESOURCE, temperatureandhumidity_callback, NULL);
+  temperatureandhumidity_resource = coap_obs_request_registration(&coap_temperatureandhumidity, TEMPERATUREANDHUMIDITY_RESOURCE, temperatureandhumidity_callback, NULL);
 
 
   retry_requests = MAX_REQUESTS;
@@ -332,7 +332,7 @@ PROCESS_THREAD(hvac_process, ev, data)
   coap_endpoint_parse(coap_co_endpoint, strlen(coap_co_endpoint), &coap_co);
 
   // Observing the co sensor 
-  co_resource = coap_obs_request_registration(&coap_co, "/"CO_RESOURCE, co_callback, NULL);
+  co_resource = coap_obs_request_registration(&coap_co, CO_RESOURCE, co_callback, NULL);
 
   while(1) {
     PROCESS_YIELD();
