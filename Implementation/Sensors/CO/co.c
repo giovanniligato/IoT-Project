@@ -84,7 +84,7 @@ static void notification_callback(coap_observee_t *obs, void *notification, coap
       hvac_status = false;
       if(led_value == LEDS_OFF)
         sleeping_mode = true;
-      if(led_value == LEDS_CONF_RED)
+      if(led_value == LEDS_RED)
         hvac_status = true;
 
       // printf("Sleeping mode: %d\n", sleeping_mode);

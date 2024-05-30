@@ -85,16 +85,17 @@ static void movement_callback(coap_observee_t *obs, void *notification, coap_not
       
       if(payload.measurements[0].value.bv){
         leds_single_on(LEDS_YELLOW);
-        led_status = LEDS_CONF_YELLOW;
+        led_status = LEDS_YELLOW;
       }
       else{
-        if(led_status == LEDS_GREEN){
-          // The human operator is leaving the room
-          // fai lampeggiare per 15 secondi ad intervalli di un secondo
-          process_poll(&vaultstatus_process);
-        }
         leds_single_off(LEDS_YELLOW);        
         leds_off(LEDS_ALL);
+        
+        if(led_status == LEDS_GREEN){
+          // The human operator is leaving the room
+          // fai lampeggiare per 5 secondi ad intervalli di un secondo
+          process_poll(&vaultstatus_process);
+        }
         led_status = LEDS_OFF;
       }
 
@@ -137,6 +138,8 @@ static void hvac_callback(coap_observee_t *obs, void *notification, coap_notific
 
   const uint8_t *buffer = NULL;
 
+  unsigned int old_led_status = led_status;
+
   int buffer_size;
   if(notification){
     buffer_size = coap_get_payload(notification, &buffer);
@@ -157,17 +160,26 @@ static void hvac_callback(coap_observee_t *obs, void *notification, coap_notific
       // If the hvac is on, the red led is on
       // If the hvac is off, the green led is on
 
-      if(payload.measurements[0].value.bv){
+      if(!payload.measurements[0].value.bv){
+        LOG_DBG("HVAC is off\n");
         leds_single_off(LEDS_YELLOW);        
         leds_off(LEDS_ALL);
-        leds_on(LEDS_GREEN);
+        #ifdef COOJA
+          leds_single_on(LEDS_GREEN);
+        #else
+          leds_on(LEDS_GREEN);
+        #endif
         led_status = LEDS_GREEN;
-        // Fare lampeggiare led verde per 5 secondi
       }
       else{
+        LOG_DBG("HVAC is on\n");
         leds_single_off(LEDS_YELLOW);        
         leds_off(LEDS_ALL);
-        leds_on(LEDS_RED);
+        #ifdef COOJA
+          leds_single_on(LEDS_RED);
+        #else
+          leds_on(LEDS_RED);
+        #endif
         led_status = LEDS_RED;
       }
 
@@ -199,7 +211,8 @@ static void hvac_callback(coap_observee_t *obs, void *notification, coap_notific
 
   }
 
-  if(led_status == LEDS_GREEN){
+  if(led_status == LEDS_GREEN && old_led_status != LEDS_GREEN){
+    LOG_DBG("LED should blink\n");
     // fai lampeggiare per 5 secondi ad intervalli di un secondo
     process_poll(&vaultstatus_process);
   }
@@ -284,6 +297,8 @@ void hvac_request_handler(coap_message_t *response){
 
 PROCESS_THREAD(vaultstatus_process, ev, data)
 {
+  static int i;
+
   PROCESS_BEGIN();
   
   coap_activate_resource(&res_vaultstatus, RESOURCE_NAME);
@@ -331,7 +346,6 @@ PROCESS_THREAD(vaultstatus_process, ev, data)
   // Observing the movement sensor
   movement_resource = coap_obs_request_registration(&coap_movement, MOVEMENT_RESOURCE, movement_callback, NULL);
 
-
   retry_requests = MAX_REQUESTS;
 
   // Requesting the IP of the HVAC node
@@ -351,7 +365,6 @@ PROCESS_THREAD(vaultstatus_process, ev, data)
 		}
 	}
 
-
   char coap_hvac_endpoint[100];
   snprintf(coap_hvac_endpoint, 100, "coap://[%s]:5683", ip_hvac);  
   coap_endpoint_parse(coap_hvac_endpoint, strlen(coap_hvac_endpoint), &coap_hvac);
@@ -359,18 +372,22 @@ PROCESS_THREAD(vaultstatus_process, ev, data)
   // Observing the hvac
   hvac_resource = coap_obs_request_registration(&coap_hvac, HVAC_RESOURCE, hvac_callback, NULL);
 
-
-
   etimer_set(&automatic_door_timer, CLOCK_SECOND);
 
   while(1) {
+    LOG_DBG("VaultStatus process is going to sleep\n");
+    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&automatic_door_timer));
     PROCESS_YIELD();
-    
+    LOG_DBG("VaultStatus process is waking up\n");
     etimer_restart(&automatic_door_timer);
-    for(int i = 0; i < OPEN_AUTOMATIC_DOOR_SECONDS; i++){
+    for(i = 0; i < OPEN_AUTOMATIC_DOOR_SECONDS; i++){
       PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&automatic_door_timer));
-      leds_toggle(LEDS_GREEN);
-      etimer_reset(&automatic_door_timer);      
+      #ifdef COOJA
+        leds_single_toggle(LEDS_GREEN);
+      #else
+        leds_toggle(LEDS_GREEN);
+      #endif
+      etimer_reset(&automatic_door_timer);
     }      
     
   }

@@ -11,7 +11,6 @@ CONTIKI=../../../../contiki-ng
 include $(CONTIKI)/Makefile.dir-variables
 MODULES += $(CONTIKI_NG_APP_LAYER_DIR)/coap
 
-
 ifeq ($(TARGET), cooja)
 CFLAGS += -DCOOJA
 endif
