@@ -2,7 +2,6 @@ package it.unipi.iot.Server;
 
 import com.google.gson.Gson;
 import it.unipi.iot.Server.Driver.Database;
-import it.unipi.iot.Server.JSON.RegistrationRequest;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
@@ -38,6 +37,11 @@ public class CoAPRegistration extends CoapResource {
                 exchange.respond(CoAP.ResponseCode.INTERNAL_SERVER_ERROR);
             } else {
                 exchange.respond(CoAP.ResponseCode.CREATED);
+                // Initialize and start observing the resource
+                if(resourceExposed.equals("temperatureandhumidity") || resourceExposed.equals("co") || resourceExposed.equals("hvac")) {
+                    CoapObserver observer = new CoapObserver(ip, resourceExposed);
+                    observer.startObserving();
+                }
             }
         } catch (Exception e) {
             exchange.respond(CoAP.ResponseCode.INTERNAL_SERVER_ERROR);

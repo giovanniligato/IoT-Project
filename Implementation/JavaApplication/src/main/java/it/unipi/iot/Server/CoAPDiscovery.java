@@ -2,7 +2,6 @@ package it.unipi.iot.Server;
 
 import com.google.gson.Gson;
 import it.unipi.iot.Server.Driver.Database;
-import it.unipi.iot.Server.JSON.RegistrationRequest;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
