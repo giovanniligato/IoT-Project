@@ -47,11 +47,11 @@ public class CoapObserver {
             @Override
             public void onLoad(CoapResponse response) {
                 String content = response.getResponseText();
-                System.out.println("Notifica ricevuta: " + content);
+                // System.out.println("Notifica ricevuta: " + content);
                 List<String> values = SenMLParser.parseSenmlPayload(content);
 
                 if (values.get(0).equals("-1.00000")) {
-                    System.out.println("REGISTRAZIONE AVVENUTA CORRETTAMENTE");
+                    // System.out.println("REGISTRAZIONE AVVENUTA CORRETTAMENTE");
                     return;
                 }
                  
@@ -76,10 +76,10 @@ public class CoapObserver {
 
                     if (ps.getUpdateCount() < 1) {
                         // ERROR
-                        System.err.println("Errore nell'inserimento dei dati nel database");
+                        // System.err.println("Errore nell'inserimento dei dati nel database");
                     } else {
                         // SUCCESS
-                        System.out.println("Dati inseriti correttamente");
+                        // System.out.println("Dati inseriti correttamente");
                     }
                     
                 } catch (Exception e) {

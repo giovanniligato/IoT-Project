@@ -11,6 +11,8 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
+import it.unipi.iot.UserApplication.UserApplication;
+
 public class CoAPRegistration extends CoapResource {
 
     public CoAPRegistration(String name){
@@ -41,6 +43,9 @@ public class CoAPRegistration extends CoapResource {
                 if(resourceExposed.equals("temperatureandhumidity") || resourceExposed.equals("co") || resourceExposed.equals("hvac")) {
                     CoapObserver observer = new CoapObserver(ip, resourceExposed);
                     observer.startObserving();
+                }
+                if(resourceExposed.equals("movement")) {
+                    UserApplication.initializeUri("coap://[" + ip + "]:5683/movement");
                 }
             }
         } catch (Exception e) {

@@ -2,6 +2,8 @@ package it.unipi.iot;
 
 import it.unipi.iot.Server.CoAPServer;
 
+import it.unipi.iot.UserApplication.UserApplication;
+
 public class Main {
     public static void main(String[] args) {
 
@@ -11,7 +13,7 @@ public class Main {
         // Starting the CoAP Server
         server.start();
 
-        
+        UserApplication.startGUI();
 
 
     }

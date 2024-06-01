@@ -10,12 +10,13 @@
 #define LOG_LEVEL LOG_LEVEL_APP
 
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
+static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void res_event_handler(void);
 
 EVENT_RESOURCE(res_movement,
                "title=\"VoltVault: \";rt=\"senml+json\";if=\"sensor\";obs",
                res_get_handler,
-               NULL,
+               res_post_handler,
                NULL,
                NULL,
                res_event_handler);
@@ -63,3 +64,18 @@ res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buff
     }
 }
 
+static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
+{
+    // Ricezione e stampa del payload della richiesta POST
+    const char *payload = (char *)request->payload;
+    LOG_DBG("[Movement] Received the payload: %s\n", payload);
+
+    // Alterna lo stato della variabile vault_activated
+    vault_activated = !vault_activated;
+
+    // Notifica a tutti gli osservatori della risorsa che lo stato è cambiato
+    coap_notify_observers(&res_movement);
+
+    // Imposta il codice di stato della risposta a 2.04 (Changed)
+    coap_set_status_code(response, CHANGED_2_04);
+}
