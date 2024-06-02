@@ -47,7 +47,7 @@ public class CoapObserver {
             @Override
             public void onLoad(CoapResponse response) {
                 String content = response.getResponseText();
-                System.out.println("Notifica ricevuta: " + content);
+                // System.out.println("Notifica ricevuta: " + content);
                 List<String> values = SenMLParser.parseSenmlPayload(content);
 
                 if (values.get(0).equals("-1.0")) {                    

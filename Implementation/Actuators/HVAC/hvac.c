@@ -47,6 +47,9 @@ static bool temperature_received = false;
 static bool humidity_received = false;
 static bool co_received = false;
 
+#define MAX_DETECTOR_SENSOR_OFF 3
+static int detector_sensor_off = 0;
+
 PROCESS(hvac_process, "HVAC process");
 AUTOSTART_PROCESSES(&hvac_process);
 
@@ -92,9 +95,13 @@ static void co_callback(coap_observee_t *obs, void *notification, coap_notificat
       current_co = payload.measurements[0].value.v;
       co_received = true;
 
-      if(co_received && temperature_received && humidity_received){
+      if((co_received && temperature_received && humidity_received) || (detector_sensor_off >= MAX_DETECTOR_SENSOR_OFF)){
         res_hvac.trigger();
         co_received = temperature_received = humidity_received = false;
+        detector_sensor_off = 0;
+      }
+      else{
+        detector_sensor_off++;
       }
 
       break;        
@@ -176,9 +183,13 @@ static void temperatureandhumidity_callback(coap_observee_t *obs, void *notifica
         }
       }
 
-      if(co_received && temperature_received && humidity_received){
+      if((co_received && temperature_received && humidity_received) || (detector_sensor_off >= MAX_DETECTOR_SENSOR_OFF)){
         res_hvac.trigger();
         co_received = temperature_received = humidity_received = false;
+        detector_sensor_off = 0;
+      }
+      else{
+        detector_sensor_off++;
       }
 
       break;        

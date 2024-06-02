@@ -204,10 +204,10 @@ static void hvac_callback(coap_observee_t *obs, void *notification, coap_notific
           led_status = LEDS_RED;
         }
 
-        // Trigger the notification of the vault status resource
-        res_vaultstatus.trigger();
       }
-
+      
+      // Trigger the notification of the vault status resource
+      res_vaultstatus.trigger();
 
       break;        
 
