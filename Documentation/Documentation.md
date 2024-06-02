@@ -74,13 +74,13 @@ header-includes: |
 
 
 # 1. Introduction
-In an industrial setting, rooms dedicated to the maintenance and inspection of industrial batteries or fuel cells are critical. These rooms, known as battery rooms or fuel cell rooms, pose significant risks due to the potential release of hazardous gases, particularly carbon monoxide (CO), and the heat generated during the charging and discharging cycles of the batteries or fuel cells. 
+In an industrial setting, rooms dedicated to the maintenance and inspection of industrial batteries or fuel cells are critical. These rooms, known as battery rooms or fuel cell rooms, pose significant risks due to the potential release of *hazardous gases*, particularly carbon monoxide (CO), and the *heat* generated during the charging and discharging cycles of the batteries or fuel cells. 
 
 The industrial battery room is typically situated within larger facilities such as factories producing electric vehicles, renewable energy plants utilizing fuel cells, or data centers relying on large battery banks for uninterruptible power supplies (UPS). For instance, in a factory producing electric vehicles, the battery room is essential for the regular maintenance and inspection of the batteries that power the vehicles. Similarly, in a renewable energy plant, fuel cells are maintained in these rooms to ensure efficient energy storage and conversion. Data centers, which require constant power, also depend on battery rooms to house backup batteries that can be critical during power outages.
 
 The primary function of these rooms is to house large industrial batteries or fuel cells essential for energy storage and backup power. Regular maintenance, inspection, and occasional repair of these energy storage systems take place in this controlled environment. During the charging and discharging processes, batteries can emit gases, including hydrogen and carbon monoxide. CO is particularly dangerous as it is colorless and odorless, posing a significant risk of poisoning to human operators. Furthermore, the chemical reactions within batteries and fuel cells generate substantial heat. Without adequate ventilation and cooling, the room can reach high temperatures, making it unsafe for human occupancy.
 
-VoltVault is designed to mitigate these risks implementing stringent safety protocols. Before any human operator enters the battery room, sensors for evaluating CO levels, temperature, and humidity are activated. These sensors are strategically placed to provide accurate and comprehensive readings. If sensors detect CO levels above permissible exposure limits or temperatures exceeding the safe operational range, an automated system activates fans and cooling units. The ventilation system is designed to rapidly expel hazardous gases and reduce the temperature to safe levels, ensuring the environment is safe for human entry.
+**VoltVault** is designed to mitigate these risks implementing stringent safety protocols. Before any human operator enters the battery room, sensors for evaluating CO levels, temperature, and humidity are activated. These sensors are strategically placed to provide accurate and comprehensive readings. If sensors detect CO levels above permissible exposure limits or temperatures exceeding the safe operational range, an automated system activates fans and cooling units. The ventilation system is designed to rapidly expel hazardous gases and reduce the temperature to safe levels, ensuring the environment is safe for human entry.
 
 Once the operator enters the room, the sensors remain active to continuously monitor the conditions. This real-time monitoring ensures that any sudden changes in CO levels or temperature are immediately detected, triggering the ventilation and cooling systems as necessary. The operator's tasks include visual inspections of the batteries or fuel cells, checking for signs of wear or damage, performing diagnostic tests, replacing faulty components, and ensuring all systems are operating efficiently. Given the critical nature of these tasks, it is essential that the room maintains optimal conditions to protect the operator's health.
 
@@ -108,7 +108,7 @@ The movement sensor is installed at the entrance of the battery room. It detects
 ### 2.1.2. Vault Status Indicator
 The vault status indicator is a traffic light system that displays the current status of the battery room:
 
-- **Red Light:** Indicates that the room is unsafe for entry due to high levels of CO or excessive temperature.
+- **Red Light:** Indicates that the room is unsafe for entry due to high levels of CO or excessive temperature or humidity.
 - **Yellow Light:** Indicates that the system is assessing the room conditions before entry is allowed.
 - **Green Light:** Indicates that the room is safe for entry. Blinking green indicates that the automatic door is open.
 
@@ -123,7 +123,7 @@ The HVAC (Heating, Ventilation, and Air Conditioning) system is integrated to ma
 - **CO Sensor:** Monitors the levels of carbon monoxide within the room. If the CO levels exceed the permissible threshold, the system triggers the HVAC system to increase ventilation.
 - **Temperature and Humidity Sensor:** Tracks the temperature and humidity levels inside the battery room. High temperatures trigger the cooling function of the HVAC system, while abnormal humidity levels prompt adjustments to maintain optimal conditions.
 
-Both sensors are by default in sleeping mode and activated only when the movement sensor detects the presence of a human operator.
+Both sensors are by default in *sleeping mode* and activated only when the movement sensor detects the presence of a human operator.
 
 ### 2.1.6. Dashboard (Grafana)
 The dashboard provides real-time data visualization and monitoring. It displays sensor readings and system status, allowing operators to remotely monitor the conditions within the battery room. It also logs historical data for analysis and reporting purposes.
@@ -161,7 +161,7 @@ The VoltVault system employs a sophisticated wireless sensor network (WSN) to en
 \begin{figure}[!htb]
     \centering
     \includegraphics[width=0.95\textwidth]{Resources/"architecture.png"}
-    \caption{The VoltVault system architecture diagram illustrates the integration of various sensors and control mechanisms within a wireless sensor network (WSN). Key components include movement sensors, CO sensors, temperature and humidity sensors, an HVAC system with a machine learning model, a border router for internet connectivity, a user application for remote control, a cloud application for data storage and node registration, and Grafana for data visualization.}
+    \caption{The VoltVault system architecture diagram illustrates the integration of various sensors and control mechanisms within a wireless sensor network (WSN). Key components include movement sensor, CO sensor, temperature and humidity sensor, an HVAC system with a machine learning model, a border router for internet connectivity, a user application for remote control, a cloud application for data storage and node registration, and Grafana for data visualization.}
     \label{fig:architecture}
 \end{figure}
 
@@ -195,7 +195,7 @@ The VoltVault system employs a sophisticated wireless sensor network (WSN) to en
 - **Resource Exposed:** `/hvac`
 - **Observations:** Observes `/co` and `/temperatureandhumidity`.
 - **Function:** Regulates the environmental conditions in the room.
-- **Description:** The HVAC system employs a *Machine Learning* model (RandomForest classifier) to evaluate data from CO, temperature, and humidity sensors. Based on this data, it classifies the room as habitable or not and adjusts ventilation and cooling systems accordingly.
+- **Description:** The HVAC system employs a *Machine Learning* model (Section **5. Machine Learning Model**) to evaluate data from CO, temperature, and humidity sensors. Based on this data, it classifies the room as *habitable* or *not* and adjusts ventilation and cooling systems accordingly.
 
 ### 3.1.6. Border Router
 - **Function:** Provides connectivity between the WSN and the internet.
@@ -274,7 +274,7 @@ If the temperature sensor reads 27°C, it will be reported as 2700000 in the JSO
 
 **Note:** This encoding technique ensures that the system remains compliant with the limitations of the nRF52840 microcontrollers while providing accurate sensor data.
 
-By employing JSON and adhering to the SenML standard, the VoltVault system not only achieves efficient and readable data encoding but also ensures broad compatibility and ease of integration with other IoT systems and applications.
+\newpage 
 
 # 5. Machine Learning Model
 
@@ -284,7 +284,11 @@ The VoltVault system employs a machine learning model to assess the environmenta
 
 The HVAC actuator utilizes the machine learning model to process real-time sensor data, such as CO levels, temperature, and humidity. Based on these inputs, the model classifies the room's condition as habitable or non-habitable, enabling the HVAC system to take appropriate actions, like adjusting ventilation or cooling.
 
-### 5.1.1. Training the Model
+### 5.1.1. Dataset
+
+The dataset used for training the model is sourced from [Kaggle - Environmental Sensor Data](https://www.kaggle.com/datasets/garystafford/environmental-sensor-data-132k). This dataset contains 132,000 records of environmental sensor data, including temperature, humidity, and CO levels. It provides a comprehensive set of features for training robust machine learning models aimed at environmental monitoring.
+
+### 5.1.2. Training the Model
 
 The training of the RandomForestClassifier involves several key steps:
 
@@ -309,7 +313,7 @@ model.fit(X_train, y_train)
 2. **Dataset Splitting:** The data is divided into training and testing sets to ensure the model's performance can be evaluated accurately.
 3. **Model Training:** The `RandomForestClassifier` is trained on the training set, learning the relationships between the sensor readings and the room's habitability.
 
-### 5.1.2. Deployment
+### 5.1.3. Deployment
 
 After training, the model is converted into C code using emlearn, allowing it to run efficiently on the HVAC actuator's hardware:
 
@@ -334,7 +338,7 @@ The VoltVault system uses a MySQL database to store sensor data and actuator sta
 
 ## 6.1. Table: `co_sensor`
 
-The `co_sensor` table stores data from the CO sensors, which monitor the concentration of carbon monoxide in the battery room.
+The `co_sensor` table stores data from the CO sensor, which monitors the concentration of carbon monoxide in the battery room.
 
 \begin{table}[h]
     \begin{tabularx}{\textwidth}{XXXX}
@@ -415,12 +419,8 @@ The `iot_nodes` table keeps track of the IP addresses and resources exposed by t
 
 ### 6.4.1. Description:
 - **ip:** The IP address of the IoT node.
-- **resource_exposed:** The resource or endpoint exposed by the IoT node, such as `/co`, `/temperatureandhumidity`, or `/hvac`.
+- **resource_exposed:** The resource or endpoint exposed by the IoT node, such as `co`, `temperatureandhumidity`, or `hvac`.
 
-### 6.4.2. Note:
-To handle the precision limitations of the Nordic nRF52840 microcontrollers, floating-point values (such as those for temperature, humidity, and CO levels) are stored as integers multiplied by 100,000. This method preserves a precision of five decimal places.
-
-By maintaining these tables, the VoltVault system ensures accurate and reliable storage of environmental data, enabling efficient monitoring and control of the battery room's conditions.
 
 \newpage 
 
@@ -483,8 +483,6 @@ To effectively monitor and analyze the environmental conditions within the indus
 The VoltVault system successfully integrates a machine learning model within the HVAC actuator to monitor and manage the environmental conditions of industrial battery rooms. Utilizing a **RandomForestClassifier** and **emlearn** for model conversion, the system ensures real-time assessment and control, enhancing safety and operational efficiency.
 
 While effective, VoltVault can be further improved and expanded. Future versions could incorporate additional sensors to monitor other hazardous gases and battery health metrics, providing a more comprehensive overview. By incorporating predictive analytics, the system could anticipate potential issues, allowing for proactive maintenance and reducing downtime.
-
-Enhancing remote capabilities would enable operators to access real-time data and control systems from anywhere, improving response times and centralizing control. Integrating VoltVault with other IoT systems within industrial facilities could provide a holistic approach to facility management.
 
 Exploring advanced machine learning models could improve the detection of complex patterns and anomalies, enhancing accuracy and reliability. Additionally, developing a more intuitive interface for Grafana dashboards and user applications would improve usability and decision-making.
 
