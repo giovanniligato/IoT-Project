@@ -27,9 +27,9 @@
 
 #define SLEEP_INTERVAL 15*CLOCK_SECOND
 
-#define SAMPLE_INTERVAL 5*CLOCK_SECOND
+#define SAMPLE_INTERVAL 12*CLOCK_SECOND
 
-#define LEDS_OFF 5
+#define ALL_LEDS_OFF 5
 
 extern coap_resource_t res_temperatureandhumidity;
 static struct etimer sleep_timer;
@@ -40,7 +40,7 @@ static int retry_requests = MAX_REQUESTS;
 
 static bool sleeping_mode = true;
 
-extern bool hvac_status;
+bool hvac_status = false;
 
 // Observe the resource 
 static coap_observee_t *vaultstatus_resource;
@@ -55,9 +55,17 @@ static void notification_callback(coap_observee_t *obs, void *notification, coap
   payload.measurements = measurements;
   payload.num_measurements = 1;
 
+  static char base_name[MAX_STRING_LEN];
+  static char name[1][MAX_STRING_LEN];
+  static char unit[1][MAX_STRING_LEN];
+  
+  payload.base_name = base_name;
+  payload.measurements[0].name = name[0];
+  payload.measurements[0].unit = unit[0];
+
   const uint8_t *buffer = NULL;
 
-  int buffer_size;
+  int buffer_size = 0;
   if(notification){
     buffer_size = coap_get_payload(notification, &buffer);
 
@@ -68,6 +76,8 @@ static void notification_callback(coap_observee_t *obs, void *notification, coap
       
       LOG_DBG("NOTIFICATION RECEIVED in TemperatureAndHumidity Sensor: %s\n", buffer);
 
+      LOG_DBG("In notification_callback payload.num_measurements is: %d\n", payload.num_measurements);
+      
       if(parse_senml_payload((char*)buffer, buffer_size, &payload) == -1){
         LOG_ERR("ERROR in parsing the payload.\n");
         return;
@@ -81,7 +91,7 @@ static void notification_callback(coap_observee_t *obs, void *notification, coap
       int led_value = (int) payload.measurements[0].value.v;
       sleeping_mode = false;
       hvac_status = false;
-      if(led_value == LEDS_OFF)
+      if(led_value == ALL_LEDS_OFF)
         sleeping_mode = true;
       if(led_value == LEDS_RED)
         hvac_status = true;

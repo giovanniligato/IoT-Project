@@ -110,10 +110,10 @@ PROCESS_THREAD(pir_motion_sensor_process, ev, data)
       res_movement.trigger();
     }
     #ifndef COOJA
-    else if(nrf_gpio_pin_read(NRF_GPIO_PIN_MAP(PIR_SENSOR_PORT, PIR_SENSOR_PIN))) { // Legge lo stato del pin del sensore PIR
-      // Chiamata a una funzione per notificare il movimento (trigger)
-      res_movement.trigger();
-    }
+    // else if(nrf_gpio_pin_read(NRF_GPIO_PIN_MAP(PIR_SENSOR_PORT, PIR_SENSOR_PIN))) { // Legge lo stato del pin del sensore PIR
+    //   // Chiamata a una funzione per notificare il movimento (trigger)
+    //   res_movement.trigger();
+    // }
     #endif
 
     etimer_reset(&timer);

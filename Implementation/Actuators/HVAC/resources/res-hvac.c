@@ -34,15 +34,12 @@ res_event_handler(void)
     
     // Prepare input data
     float input_data[3] = {(float)current_temperature, (float)current_humidity, (float)current_co};
-    // float output_data[1] = {0.0};
-    
-    // printf("%p\n", eml_net_activation_function_strs); 
 
     // Predict the output (True if not habitable)
     // Values returned by the ML model
     // 1: Habitable, 0: Not habitable
     hvac_status = machine_learning_predict(input_data, 3) == 0;
-    printf("HVAC Status: %d\n", hvac_status);
+    LOG_DBG("[HVAC] Predicted HVAC status: %d\n", hvac_status);
 
     // Notify all the observers
     coap_notify_observers(&res_hvac);

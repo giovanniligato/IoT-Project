@@ -28,7 +28,8 @@ EVENT_RESOURCE(res_co,
 
 
 static double co_level = -1.0;
-bool hvac_status = false;
+
+extern bool hvac_status;
 
 static void
 res_event_handler(void)
@@ -39,7 +40,7 @@ res_event_handler(void)
     else
         co_level = generate_random_number(MIN_CO_LEVEL, MAX_CO_LEVEL, co_level, MAX_PERCENTAGE_VARIATION, hvac_status);
     
-    LOG_DBG("New CO level: %f\n", co_level);
+    // LOG_DBG("New CO level: %f\n", co_level);
     
     // Notify all the observers
     coap_notify_observers(&res_co);

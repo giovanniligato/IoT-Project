@@ -53,13 +53,23 @@ AUTOSTART_PROCESSES(&hvac_process);
 static void co_callback(coap_observee_t *obs, void *notification, coap_notification_flag_t flag)
 {
   static senml_payload_t payload;
+  
   static senml_measurement_t measurements[1];
   payload.measurements = measurements;
   payload.num_measurements = 1;
 
+  static char base_name[MAX_STRING_LEN];
+  static char name[1][MAX_STRING_LEN];
+  static char unit[1][MAX_STRING_LEN];
+  
+  payload.base_name = base_name;
+  payload.measurements[0].name = name[0];
+  payload.measurements[0].unit = unit[0];
+
   const uint8_t *buffer = NULL;
 
-  int buffer_size;
+
+  int buffer_size = 0;
   if(notification){
     buffer_size = coap_get_payload(notification, &buffer);
 
@@ -71,7 +81,9 @@ static void co_callback(coap_observee_t *obs, void *notification, coap_notificat
       // Da movement riceviamo il booleano vault_activated
 
       LOG_DBG("NOTIFICATION RECEIVED in HVAC by CO sensor: %s\n", buffer);
- 
+
+      LOG_DBG("In co_callback payload.num_measurements is: %d\n", payload.num_measurements);
+
       if(parse_senml_payload((char*)buffer, buffer_size, &payload) == -1){
         LOG_ERR("ERROR in parsing the payload.\n");
         return;
@@ -119,9 +131,21 @@ static void temperatureandhumidity_callback(coap_observee_t *obs, void *notifica
   payload.measurements = measurements;
   payload.num_measurements = 2;
 
+  static char base_name[MAX_STRING_LEN];
+  static char name[2][MAX_STRING_LEN];
+  static char unit[2][MAX_STRING_LEN];
+  
+  payload.base_name = base_name;
+  payload.measurements[0].name = name[0];
+  payload.measurements[0].unit = unit[0];
+
+  payload.measurements[1].name = name[1];
+  payload.measurements[1].unit = unit[1];
+
+ 
   const uint8_t *buffer = NULL;
 
-  int buffer_size;
+  int buffer_size = 0;
   if(notification){
     buffer_size = coap_get_payload(notification, &buffer);
 
@@ -133,7 +157,9 @@ static void temperatureandhumidity_callback(coap_observee_t *obs, void *notifica
       // Da movement riceviamo il booleano vault_activated
 
       LOG_DBG("NOTIFICATION RECEIVED in HVAC by TemperatureAndHumidity sensor: %s\n", buffer);
- 
+
+      LOG_DBG("In temperatureandhumidity_callback payload.num_measurements is: %d\n", payload.num_measurements);
+      
       if(parse_senml_payload((char*)buffer, buffer_size, &payload) == -1){
         LOG_ERR("ERROR in parsing the payload.\n");
         return;

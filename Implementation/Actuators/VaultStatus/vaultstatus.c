@@ -27,9 +27,9 @@
 
 #define SLEEP_INTERVAL 15*CLOCK_SECOND
 
-#define OPEN_AUTOMATIC_DOOR_SECONDS 4
+#define OPEN_AUTOMATIC_DOOR_SECONDS 6
 
-#define LEDS_OFF 5
+#define ALL_LEDS_OFF 5
 
 extern coap_resource_t res_vaultstatus;
 static struct etimer sleep_timer;
@@ -44,7 +44,7 @@ static coap_observee_t *movement_resource;
 // Observe the hvac resource
 static coap_observee_t *hvac_resource;
 
-unsigned int led_status = LEDS_OFF;
+unsigned int led_status = ALL_LEDS_OFF;
 
 static struct etimer automatic_door_timer;
 
@@ -58,9 +58,17 @@ static void movement_callback(coap_observee_t *obs, void *notification, coap_not
   payload.measurements = measurements;
   payload.num_measurements = 1;
 
+  static char base_name[MAX_STRING_LEN];
+  static char name[1][MAX_STRING_LEN];
+  static char unit[1][MAX_STRING_LEN];
+  
+  payload.base_name = base_name;
+  payload.measurements[0].name = name[0];
+  payload.measurements[0].unit = unit[0];
+
   const uint8_t *buffer = NULL;
 
-  int buffer_size;
+  int buffer_size = 0;
   if(notification){
     buffer_size = coap_get_payload(notification, &buffer);
 
@@ -72,6 +80,8 @@ static void movement_callback(coap_observee_t *obs, void *notification, coap_not
       // Da movement riceviamo il booleano vault_activated
 
       LOG_DBG("NOTIFICATION RECEIVED in VaultStatus: %s\n", buffer);
+
+      LOG_DBG("In movement_callback payload.num_measurements is: %d\n", payload.num_measurements);
 
       if(parse_senml_payload((char*)buffer, buffer_size, &payload) == -1){
         LOG_ERR("ERROR in parsing the payload.\n");
@@ -96,7 +106,7 @@ static void movement_callback(coap_observee_t *obs, void *notification, coap_not
           // fai lampeggiare per 5 secondi ad intervalli di un secondo
           process_poll(&vaultstatus_process);
         }
-        led_status = LEDS_OFF;
+        led_status = ALL_LEDS_OFF;
       }
 
       // Trigger the notification of the vault status resource
@@ -120,7 +130,6 @@ static void movement_callback(coap_observee_t *obs, void *notification, coap_not
       obs = NULL;
       break;
       
-
     default: 
       LOG_ERR("[VaultStatus] ERROR: Default in notification callback\n");
       break;
@@ -136,11 +145,19 @@ static void hvac_callback(coap_observee_t *obs, void *notification, coap_notific
   payload.measurements = measurements;
   payload.num_measurements = 1;
 
+  static char base_name[MAX_STRING_LEN];
+  static char name[1][MAX_STRING_LEN];
+  static char unit[1][MAX_STRING_LEN];
+  
+  payload.base_name = base_name;
+  payload.measurements[0].name = name[0];
+  payload.measurements[0].unit = unit[0];
+
   const uint8_t *buffer = NULL;
 
   unsigned int old_led_status = led_status;
 
-  int buffer_size;
+  int buffer_size = 0;
   if(notification){
     buffer_size = coap_get_payload(notification, &buffer);
   }
@@ -152,6 +169,8 @@ static void hvac_callback(coap_observee_t *obs, void *notification, coap_notific
 
       LOG_DBG("NOTIFICATION RECEIVED in VaultStatus by HVAC: %s\n", buffer);
 
+      LOG_DBG("In hvac_callback payload.num_measurements is: %d\n", payload.num_measurements);
+
       if(parse_senml_payload((char*)buffer, buffer_size, &payload) == -1){
         LOG_ERR("ERROR in parsing the payload.\n");
         return;
@@ -160,32 +179,36 @@ static void hvac_callback(coap_observee_t *obs, void *notification, coap_notific
       // If the hvac is on, the red led is on
       // If the hvac is off, the green led is on
 
-      if(!payload.measurements[0].value.bv){
-        LOG_DBG("HVAC is off\n");
-        leds_single_off(LEDS_YELLOW);        
-        leds_off(LEDS_ALL);
-        #ifdef COOJA
-          leds_single_on(LEDS_GREEN);
-        #else
-          leds_on(LEDS_GREEN);
-        #endif
-        led_status = LEDS_GREEN;
-      }
-      else{
-        LOG_DBG("HVAC is on\n");
-        leds_single_off(LEDS_YELLOW);        
-        leds_off(LEDS_ALL);
-        #ifdef COOJA
-          leds_single_on(LEDS_RED);
-        #else
-          leds_on(LEDS_RED);
-        #endif
-        led_status = LEDS_RED;
+      if(led_status != ALL_LEDS_OFF){
+
+        if(!payload.measurements[0].value.bv){
+          LOG_DBG("HVAC is off\n");
+          leds_single_off(LEDS_YELLOW);        
+          leds_off(LEDS_ALL);
+          #ifdef COOJA
+            leds_single_on(LEDS_GREEN);
+          #else
+            leds_on(LEDS_GREEN);
+          #endif
+          led_status = LEDS_GREEN;
+        }
+        else{
+          LOG_DBG("HVAC is on\n");
+          leds_single_off(LEDS_YELLOW);        
+          leds_off(LEDS_ALL);
+          #ifdef COOJA
+            leds_single_on(LEDS_RED);
+          #else
+            leds_on(LEDS_RED);
+          #endif
+          led_status = LEDS_RED;
+        }
+
+        // Trigger the notification of the vault status resource
+        res_vaultstatus.trigger();
       }
 
-      // Trigger the notification of the vault status resource
-      res_vaultstatus.trigger();
-      
+
       break;        
 
     case OBSERVE_OK: /* server accepeted observation request */

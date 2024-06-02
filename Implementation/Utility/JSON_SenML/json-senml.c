@@ -54,14 +54,16 @@ int create_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pa
     size_t offset = 0;
     offset += snprintf(buffer + offset, buffer_size - offset, "{\"e\":[");
 
+    int temp = 0;
     for (size_t i = 0; i < payload->num_measurements; ++i) {
         const char *format = NULL;
 
         switch (payload->measurements[i].type) {
             case SENML_TYPE_V:
-                format = "{\"n\":\"%s\",\"v\":%.5f,\"u\":\"%s\"}";
+                temp =  (int) (payload->measurements[i].value.v * 100000);
+                format = "{\"n\":\"%s\",\"v\":%d,\"u\":\"%s\"}";
                 offset += snprintf(buffer + offset, buffer_size - offset, format,
-                                   payload->measurements[i].name, payload->measurements[i].value.v, payload->measurements[i].unit);
+                                   payload->measurements[i].name, temp, payload->measurements[i].unit);
                 break;
             case SENML_TYPE_BV:
                 format = "{\"n\":\"%s\",\"bv\":%s}";
@@ -84,7 +86,7 @@ int create_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pa
         }
     }
 
-    offset += snprintf(buffer + offset, buffer_size - offset, "],\"bn\":\"%s\",\"bt\":%.0f,\"ver\":%d}", 
+    offset += snprintf(buffer + offset, buffer_size - offset, "],\"bn\":\"%s\",\"bt\":%d,\"ver\":%d}", 
                        payload->base_name, payload->base_time, payload->version);
 
     // Ripristina il locale originale
@@ -99,116 +101,135 @@ int create_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pa
 
 int parse_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *payload) {
     if (buffer == NULL || payload == NULL) {
+        printf("ERROR in parse_senml_payload: POSITION 1\n");
         return -1;
     }
 
     int measurements_count = 0;
-
     char *pos = buffer;
     char *end = buffer + buffer_size;
 
+    int temp = 0;
     while (pos < end && *pos != '\0') {
-        // Cerca il campo "bn"
         if (strncmp(pos, "\"bn\"", 4) == 0) {
             pos += 5;
             char *start = strchr(pos, '\"');
-            if (start == NULL) return -1;
+            if (start == NULL) { 
+                printf("ERROR in parse_senml_payload: POSITION 2\n"); 
+                return -1;
+            }
             char *finish = strchr(start + 1, '\"');
-            if (finish == NULL) return -1;
+            if (finish == NULL) {
+                printf("ERROR in parse_senml_payload: POSITION 3\n"); 
+                return -1;
+            }
             *finish = '\0';
-            payload->base_name = strdup(start + 1);
+            strncpy(payload->base_name, start + 1, MAX_STRING_LEN - 1);
+            payload->base_name[MAX_STRING_LEN - 1] = '\0'; // Null-terminated string
             pos = finish + 1;
-        }
-        // Cerca il campo "bt"
-        else if (strncmp(pos, "\"bt\"", 4) == 0) {
+        } else if (strncmp(pos, "\"bt\"", 4) == 0) {
             pos += 5;
-            payload->base_time = atof(pos);
+            payload->base_time = atoi(pos);
             pos = strchr(pos, ',');
-        }
-        // Cerca il campo "ver"
-        else if (strncmp(pos, "\"ver\"", 5) == 0) {
+        } else if (strncmp(pos, "\"ver\"", 5) == 0) {
             pos += 6;
             payload->version = atoi(pos);
             while (*pos != '\0' && *pos != ',' && *pos != '}') {
                 pos++;
             }
-        }
-        // Cerca il campo "e"
-        else if (strncmp(pos, "\"e\"", 3) == 0) {
+        } else if (strncmp(pos, "\"e\"", 3) == 0) {
             pos += 4;
-            if (*pos != '[') return -1;
+            if (*pos != '[') {
+                printf("ERROR in parse_senml_payload: POSITION 4\n"); 
+                return -1;
+            }
             pos++;
             while (*pos != ']' && pos < end) {
-
-                if (measurements_count >= payload->num_measurements) return -1;
-
+                printf("DEBUG in parse_senml_payload: measurements_count: %d, payload->num_measurements: %d\n", measurements_count, payload->num_measurements);
+                if (measurements_count >= payload->num_measurements) {
+                    printf("ERROR in parse_senml_payload: POSITION 5\n"); 
+                    return -1;
+                }
                 senml_measurement_t *measurement = &payload->measurements[measurements_count];
-                
-                // Cerca il campo "n"
+
                 if (strncmp(pos, "{\"n\"", 4) == 0) {
                     pos += 5;
                     char *start = strchr(pos, '\"');
-                    if (start == NULL) return -1;
+                    if (start == NULL) {
+                        printf("ERROR in parse_senml_payload: POSITION 6\n"); 
+                        return -1;
+                    }
                     char *finish = strchr(start + 1, '\"');
-                    if (finish == NULL) return -1;
+                    if (finish == NULL) {
+                        printf("ERROR in parse_senml_payload: POSITION 7\n"); 
+                        return -1;
+                    }
                     *finish = '\0';
-                    measurement->name = strdup(start + 1);
+                    strncpy(measurement->name, start + 1, MAX_STRING_LEN - 1);
+                    measurement->name[MAX_STRING_LEN - 1] = '\0'; // Null-terminated string
                     pos = finish + 2;
                 }
 
-                // Cerca il campo "u"
                 if (strncmp(pos, "\"u\"", 3) == 0) {
                     pos += 4;
                     char *start = strchr(pos, '\"');
-                    if (start == NULL) return -1;
+                    if (start == NULL) {
+                        printf("ERROR in parse_senml_payload: POSITION 8\n"); 
+                        return -1;
+                    }
                     char *finish = strchr(start + 1, '\"');
-                    if (finish == NULL) return -1;
+                    if (finish == NULL) {
+                        printf("ERROR in parse_senml_payload: POSITION 9\n"); 
+                        return -1;
+                    }
                     *finish = '\0';
-                    measurement->unit = strdup(start + 1);
+                    strncpy(measurement->unit, start + 1, MAX_STRING_LEN - 1);
+                    measurement->unit[MAX_STRING_LEN - 1] = '\0'; // Null-terminated string
                     pos = finish + 2;
                 }
-                
-                // Cerca il campo "v"
+
                 if (strncmp(pos, "\"v\"", 3) == 0) {
                     pos += 4;
                     measurement->type = SENML_TYPE_V;
-                    measurement->value.v = atof(pos);
+                    temp = atoi(pos);
+                    measurement->value.v = ((double) temp) / 100000.0;
+                    // measurement->value.v = atof(pos);
                     pos = strchr(pos, ',');
-                }
-                // Cerca il campo "bv"
-                else if (strncmp(pos, "\"bv\"", 4) == 0) {
+                } else if (strncmp(pos, "\"bv\"", 4) == 0) {
                     pos += 5;
                     measurement->type = SENML_TYPE_BV;
                     measurement->value.bv = (strncmp(pos, "true", 4) == 0);
-                    // pos = strchr(pos, ',');
                     while (*pos != '\0' && *pos != ',' && *pos != '}') {
                         pos++;
                     }
-                }
-
-                // Cerca il campo "sv"
-                else if (strncmp(pos, "\"sv\"", 4) == 0) {
+                } else if (strncmp(pos, "\"sv\"", 4) == 0) {
                     pos += 5;
                     char *start = strchr(pos, '\"');
-                    if (start == NULL) return -1;
+                    if (start == NULL) {
+                        printf("ERROR in parse_senml_payload: POSITION 10\n"); 
+                        return -1;
+                    }
                     char *finish = strchr(start + 1, '\"');
-                    if (finish == NULL) return -1;
+                    if (finish == NULL) {
+                        printf("ERROR in parse_senml_payload: POSITION 11\n"); 
+                        return -1;
+                    }
                     *finish = '\0';
-                    measurement->type = SENML_TYPE_SV;
-                    measurement->value.sv = strdup(start + 1);
+                    strncpy(measurement->value.sv, start + 1, MAX_STRING_LEN - 1);
+                    measurement->value.sv[MAX_STRING_LEN - 1] = '\0'; // Null-terminated string
                     pos = finish + 2;
                 }
-                
+
                 measurements_count++;
-                
-                // Trova la fine di questa misurazione
                 pos = strchr(pos, '}');
-                if (pos == NULL) return -1;
+                if (pos == NULL) {
+                    printf("ERROR in parse_senml_payload: POSITION 12\n"); 
+                    return -1;
+                }
                 pos++;
                 if (*pos == ',') pos++;
             }
         }
-
         pos++;
     }
 

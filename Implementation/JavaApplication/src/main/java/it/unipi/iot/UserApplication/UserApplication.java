@@ -71,7 +71,7 @@ public class UserApplication {
 
     private static void sendPostRequest(String uri, String payload) {
         CoapClient client = new CoapClient(uri);
-        CoapResponse response = client.post(payload, MediaTypeRegistry.APPLICATION_JSON);
+        CoapResponse response = client.post(payload, MediaTypeRegistry.TEXT_PLAIN);
 
         if (response != null) {
             // System.out.println("Codice di risposta: " + response.getCode());

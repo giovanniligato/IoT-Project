@@ -3,6 +3,8 @@ package it.unipi.iot.Server.JSON;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
 public class SenMLParser {
 
     public static List<String> parseSenmlPayload(String buffer) {
@@ -24,7 +26,12 @@ public class SenMLParser {
                     pos++;
                 }
                 String value = buffer.substring(start, pos).trim();
-                values.add(value);
+                Integer number = Integer.parseInt(value);
+
+                double result = number / 100000.0;
+                String valueConverted = Double.toString(result);
+
+                values.add(valueConverted);
             }
             // Cerca il campo "bv"
             else if (buffer.startsWith("\"bv\"", pos)) {

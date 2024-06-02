@@ -2,11 +2,13 @@
 #define JSON_SENML_H
 
 #define BASE_NAME_LEN 32
+#define MAX_STRING_LEN 50
+
 
 typedef union {
     double v;       // Numeric value
     bool bv;        // Boolean value
-    const char *sv; // String value
+    char *sv; // String value
 } senml_value_t;
 
 typedef enum {
@@ -16,18 +18,18 @@ typedef enum {
 } senml_value_type_t;
 
 typedef struct {
-    const char *name;
-    const char *unit;
+    char *name;
+    char *unit;
     senml_value_t value;
     senml_value_type_t type;
 } senml_measurement_t;
 
 typedef struct {
-    const char *base_name;
-    double base_time;
+    char *base_name;
+    int base_time;
     int version;
     senml_measurement_t *measurements;
-    size_t num_measurements;
+    int num_measurements;
 } senml_payload_t;
 
 int create_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *payload);

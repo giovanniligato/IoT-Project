@@ -35,7 +35,8 @@ EVENT_RESOURCE(res_temperatureandhumidity,
 
 static double temperature_level = -1.0;
 static double humidity_level = -1.0;
-bool hvac_status = false;
+
+extern bool hvac_status;
 
 static void
 res_event_handler(void)
@@ -50,9 +51,9 @@ res_event_handler(void)
         humidity_level = generate_random_number(MIN_HUMIDITY_LEVEL, MAX_HUMIDITY_LEVEL, humidity_level, MAX_PERCENTAGE_VARIATION_HUMIDITY, hvac_status);
     }
     
-    LOG_DBG("New Temperature level: %f\n", temperature_level);
-    LOG_DBG("New Humidity level: %f\n", humidity_level);
-    
+    // LOG_DBG("New Temperature level: %f\n", temperature_level);
+    // LOG_DBG("New Humidity level: %f\n", humidity_level);
+
     // Notify all the observers
     coap_notify_observers(&res_temperatureandhumidity);
 }

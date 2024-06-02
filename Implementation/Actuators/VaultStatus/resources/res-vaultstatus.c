@@ -27,7 +27,7 @@ extern unsigned int led_status;
 static void
 res_event_handler(void)
 {
-    // Notify all the observers
+    // Notify all the observers   
     coap_notify_observers(&res_vaultstatus);
 }
 
