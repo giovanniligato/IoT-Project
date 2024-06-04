@@ -94,7 +94,7 @@ The VoltVault system (\autoref{fig:use_case}) is designed to ensure the safety a
 
 \begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.95\textwidth]{Resources/"use_case.png"}
+    \includegraphics[width=1\textwidth]{Resources/"use_case.png"}
     \caption{The VoltVault system diagram illustrates the integration of various sensors and control mechanisms to ensure the safety and efficiency of an industrial battery room. Key components include movement sensors, a vault status indicator, an automatic door, an HVAC system, CO and temperature/humidity sensors, and a real-time monitoring dashboard.}
     \label{fig:use_case}
 \end{figure}
@@ -160,7 +160,7 @@ The VoltVault system employs a sophisticated wireless sensor network (WSN) to en
 
 \begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.95\textwidth]{Resources/"architecture.png"}
+    \includegraphics[width=1\textwidth]{Resources/"architecture.png"}
     \caption{The VoltVault system architecture diagram illustrates the integration of various sensors and control mechanisms within a wireless sensor network (WSN). Key components include movement sensor, CO sensor, temperature and humidity sensor, an HVAC system with a machine learning model, a border router for internet connectivity, a user application for remote control, a cloud application for data storage and node registration, and Grafana for data visualization.}
     \label{fig:architecture}
 \end{figure}
@@ -213,6 +213,8 @@ The VoltVault system employs a sophisticated wireless sensor network (WSN) to en
 ### 3.1.9. Grafana
 - **Function:** Visualizes system data.
 - **Description:** Grafana reads data from the MySQL database and displays it in real-time dashboards. This visualization tool allows operators to monitor current conditions and review historical data through various graphs and charts.
+
+\newpage
 
 # 4. Data Encoding
 
@@ -332,6 +334,8 @@ Using **emlearn**, the trained model is converted into efficient C code, allowin
 
 By embedding the machine learning model within the HVAC actuator, the VoltVault system provides dynamic and real-time control, significantly enhancing the safety and operational efficiency of the industrial battery room.
 
+\newpage
+
 # 6. MySQL Database Schema
 
 The VoltVault system uses a MySQL database to store sensor data and actuator statuses. This database is critical for maintaining historical records and enabling real-time monitoring and analysis via Grafana. Below are the descriptions of the key tables in the database.
@@ -426,7 +430,7 @@ The `iot_nodes` table keeps track of the IP addresses and resources exposed by t
 
 # 7. Grafana Dashboard
 
-To effectively monitor and analyze the environmental conditions within the industrial battery room, we utilize Grafana for data visualization. Below are some screenshots demonstrating the real-time dashboards and historical data analysis capabilities provided by Grafana. These visualizations enable operators to maintain optimal conditions and promptly respond to any anomalies.
+To effectively monitor and analyze the environmental conditions within the industrial battery room, we utilize *Grafana* for data visualization. Below are some screenshots demonstrating the real-time dashboards and historical data analysis capabilities provided by Grafana. These visualizations enable operators to maintain optimal conditions and promptly respond to any anomalies.
 
 \begin{figure}[htb!]
   \centering
@@ -480,7 +484,7 @@ To effectively monitor and analyze the environmental conditions within the indus
 
 # 8. Conclusion and Future Work
 
-The VoltVault system successfully integrates a machine learning model within the HVAC actuator to monitor and manage the environmental conditions of industrial battery rooms. Utilizing a **RandomForestClassifier** and **emlearn** for model conversion, the system ensures real-time assessment and control, enhancing safety and operational efficiency.
+The VoltVault system successfully integrates a machine learning model within the HVAC actuator to monitor and manage the environmental conditions of industrial battery rooms. Utilizing a RandomForestClassifier and emlearn for model conversion, the system ensures real-time assessment and control, enhancing safety and operational efficiency.
 
 While effective, VoltVault can be further improved and expanded. Future versions could incorporate additional sensors to monitor other hazardous gases and battery health metrics, providing a more comprehensive overview. By incorporating predictive analytics, the system could anticipate potential issues, allowing for proactive maintenance and reducing downtime.
 

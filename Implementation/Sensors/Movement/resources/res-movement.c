@@ -62,12 +62,13 @@ res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buff
         // Printing the payload for debugging purposes
         LOG_DBG("[Movement] Sending the payload: %s\n", buffer);
     }
+    
 }
 
 static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
     // Ricezione e stampa del payload della richiesta POST
-    const char *payload = (char *)request->payload;
+    const char *payload = (char*)request->payload;
     LOG_DBG("[Movement] Received the payload: %s\n", payload);
 
     // Alterna lo stato della variabile vault_activated

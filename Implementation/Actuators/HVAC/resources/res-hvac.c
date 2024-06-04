@@ -30,12 +30,11 @@ extern double current_co;
 static void
 res_event_handler(void)
 {
-    // Predict using the ML model the status of the HVAC
     
     // Prepare input data
     float input_data[3] = {(float)current_temperature, (float)current_humidity, (float)current_co};
 
-    // Predict the output (True if not habitable)
+    // Predict the status of the HVAC using the ML model (True if Not habitable)
     // Values returned by the ML model
     // 1: Habitable, 0: Not habitable
     hvac_status = machine_learning_predict(input_data, 3) == 0;
