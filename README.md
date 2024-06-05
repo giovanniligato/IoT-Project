@@ -9,7 +9,7 @@ The project is organized into the following directories:
 
 - `Documentation/`: Contains project documentation and resources.
   - `Resources/`: Images and diagrams used in the documentation.
-  - `VoltVault_Documentation.pdf`: Detailed documentation of the project.
+  - `Documentation.pdf`: Detailed documentation of the project.
 
 - `Implementation/`: Contains the implementation of sensors, actuators, simulation scripts, and utility tools.
   
@@ -28,7 +28,7 @@ The project is organized into the following directories:
     - `VaultStatus/`: Status of the battery room and automatic door actuators.
       - `vaultstatus.c`: Main source file for the status of the battery room and automatic door actuators.
       - `resources/res-vaultstatus.c`: Resource file for the status of the battery room and automatic door actuators.
-    - `HVAC/`: Controls the HVAC system.
+    - `HVAC/`: HVAC system.
       - `hvac.c`: Main source file for the HVAC actuator.
       - `resources/res-hvac.c`: Resource file for the HVAC actuator.
   
@@ -53,7 +53,7 @@ The project is organized into the following directories:
     - `border-router.c`: Source file for the border router (as available in Contiki-NG).
 
   - `Grafana/`: Configuration files for Grafana.
-    - "VoltVault_Dashboard.json": Grafana dashboard configuration file for VoltVault.
+    - `VoltVault_Dashboard.json`: Grafana dashboard configuration file for VoltVault.
   
 - `MachineLearning/`: Machine learning scripts and data.
   - `iot_telemetry_data.csv`: Dataset for IoT telemetry data.
@@ -100,7 +100,7 @@ For enabling the `distclean` option to clean the project before flashing, use:
 
 ### MySQL Database
 
-The MySQL database is used to store the ip addresses of the sensors and actuators in the registration phase and to store the sensor/actuator data in the operation phase. If MySQL is not installed, you can install it using the following command:
+The MySQL database is used to store the ip addresses of the sensors and actuators in the registration phase and to store the sensor or actuator data in the operation phase. If MySQL is not installed, you can install it using the following command:
   ```bash
   sudo apt-get install mysql-server
   ```
@@ -153,7 +153,7 @@ The Grafana dashboard provides real-time data visualization and monitoring. It d
 
 1. Install Grafana following the instructions on the [official website](https://grafana.com/get).
 2. Configure Grafana to read data from the MySQL database used by this project.
-3. Import the provided dashboard configuration to visualize real-time data.
+3. Import the provided dashboard configuration (`Implementation/Grafana/VoltVault_Dashboard.json`) to visualize real-time data.
 
 ## License
 
