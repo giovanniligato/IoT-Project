@@ -1,4 +1,4 @@
-CONTIKI_PROJECT = movement
+CONTIKI_PROJECT = temperatureandhumidity
 all: $(CONTIKI_PROJECT)
 
 # Include CoAP resources

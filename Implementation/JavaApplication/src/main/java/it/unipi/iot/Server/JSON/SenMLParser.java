@@ -4,21 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-
 public class SenMLParser {
 
     public static List<String> parseSenmlPayload(String buffer) {
         List<String> values = new ArrayList<>();
         if (buffer == null) {
-            return values; // Ritorna una lista vuota se il buffer è nullo
+            // Return an empty list if the buffer is null
+            return values; 
         }
 
-        int measurementsCount = 0;
         int pos = 0;
         int bufferLength = buffer.length();
 
         while (pos < bufferLength) {
-            // Cerca il campo "v"
+            // Looking for the "v" field (Numeric value)
             if (buffer.startsWith("\"v\"", pos)) {
                 pos += 4;
                 int start = pos;
@@ -33,7 +32,7 @@ public class SenMLParser {
 
                 values.add(valueConverted);
             }
-            // Cerca il campo "bv"
+            // Looking for the "bv" field (Boolean value)
             else if (buffer.startsWith("\"bv\"", pos)) {
                 pos += 5;
                 int start = pos;

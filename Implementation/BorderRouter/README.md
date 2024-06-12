@@ -1,8 +1,7 @@
 # rpl-border-router
 
 This is the Contiki-NG border router. It supports two main modes of operation:
-embedded and native. In both cases, the border router runs a simple Web server
-that exposes a list of currently connected nodes via HTTP.
+embedded and native. In both cases, the border router runs a simple Web server that exposes a list of currently connected nodes via HTTP.
 
 See the [RPL border router tutorial](https://docs.contiki-ng.org/en/develop/doc/tutorials/RPL-border-router.html)
 
@@ -16,8 +15,7 @@ See `embedded/README.md` for more.
 ## Native border router
 
 The native border router runs directly at the host. The node simply runs a
-SLIP-radio interface (`examples/slip-radio`). The host, on the other hand, runs
-a full 6LoWPAN stack.
+SLIP-radio interface (`examples/slip-radio`). The host, on the other hand, runs a full 6LoWPAN stack.
 See `native/README.md` for more.
 
 ## RPL node

@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 
 import it.unipi.iot.UserApplication.UserApplication;
 
+
 public class CoAPRegistration extends CoapResource {
 
     public CoAPRegistration(String name){
@@ -31,26 +32,40 @@ public class CoAPRegistration extends CoapResource {
         String ip = exchange.getSourceAddress().toString().substring(1);
 
         try(Connection connection = Database.getConnection()) {
+
+            // Preparing the SQL query to register the iot_node
             PreparedStatement ps = connection.prepareStatement("REPLACE INTO iot_nodes (ip, resource_exposed) VALUES (?, ?)");
             ps.setString(1, ip);
             ps.setString(2, resourceExposed);
+
+            // Execute the query
             ps.executeUpdate();
+
+            // Verifies if the registration has been successful
             if (ps.getUpdateCount() < 1) {
+                // Registration failed
                 exchange.respond(CoAP.ResponseCode.INTERNAL_SERVER_ERROR);
             } else {
+                // Registration successful
                 exchange.respond(CoAP.ResponseCode.CREATED);
+
                 // Initialize and start observing the resource
                 if(resourceExposed.equals("temperatureandhumidity") || resourceExposed.equals("co") || resourceExposed.equals("hvac")) {
                     CoapObserver observer = new CoapObserver(ip, resourceExposed);
                     observer.startObserving();
                 }
+
                 if(resourceExposed.equals("movement")) {
+                    // Initializing the UserApplication
                     UserApplication.initializeUri("coap://[" + ip + "]:5683/movement");
                 }
+
             }
         } catch (Exception e) {
+            // Error handling
             exchange.respond(CoAP.ResponseCode.INTERNAL_SERVER_ERROR);
         }
+
     }
 
 }

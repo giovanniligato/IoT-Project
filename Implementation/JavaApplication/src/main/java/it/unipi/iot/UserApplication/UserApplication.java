@@ -6,18 +6,22 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 
 import java.util.Scanner;
 
+
 public class UserApplication {
 
     private static String coapUri = null;
 
     public static void startGUI() {
+
         Scanner scanner = new Scanner(System.in);
         boolean running = true;
         boolean loadingMessageDisplayed = false;
         boolean readyMessageDisplayed = false;
 
         while (running) {
+            
             if (coapUri == null) {
+              
                 if (!loadingMessageDisplayed) {
                     System.out.println("===========================================");
                     System.out.println("Application is loading...");
@@ -25,7 +29,10 @@ public class UserApplication {
                     System.out.println("===========================================");
                     loadingMessageDisplayed = true;
                 }
-            } else {
+
+            } 
+            else {
+
                 if (!readyMessageDisplayed) {
                     System.out.println("===========================================");
                     System.out.println("Application ready.");
@@ -35,13 +42,18 @@ public class UserApplication {
                 System.out.println("Type 'p' to press the button.");
                 System.out.println("Type 'q' to quit.");
                 System.out.println("===========================================");
+
                 String input = scanner.nextLine();
+
                 if (input.equalsIgnoreCase("p")) {
+                
                     sendPostRequest(coapUri, "Button pressed from UserApplication.");
-                    System.out.println("Command sent.");
-                } else if (input.equalsIgnoreCase("q")) {
+
+                } 
+                else if (input.equalsIgnoreCase("q")) {
                     running = false;
-                } else {
+                } 
+                else {
                     System.out.println("===========================================");
                     System.out.println("Unrecognized command.");
                     System.out.println("Use 'p' to press the button or 'q' to quit.");
@@ -51,9 +63,11 @@ public class UserApplication {
             // Delay to avoid too fast looping
             try {
                 Thread.sleep(500);
-            } catch (InterruptedException e) {
+            } 
+            catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
         }
 
         scanner.close();
@@ -61,23 +75,32 @@ public class UserApplication {
     }
 
     public static void initializeUri(String uri) {
+
         if (uri.startsWith("coap://")) {
             coapUri = uri;
-            // System.out.println("URI inizializzato: " + coapUri);
-        } else {
-            // System.out.println("URI non valido. Assicurati che inizi con 'coap://'.");
+            // System.out.println("URI initialized: " + coapUri);
+        } 
+        else {
+            // System.out.println("Invalid URI. Make sure it starts with 'coap://'.");
         }
+
     }
 
     private static void sendPostRequest(String uri, String payload) {
+
         CoapClient client = new CoapClient(uri);
         CoapResponse response = client.post(payload, MediaTypeRegistry.TEXT_PLAIN);
 
         if (response != null) {
-            // System.out.println("Codice di risposta: " + response.getCode());
-            // System.out.println("Testo della risposta: " + response.getResponseText());
-        } else {
-            // System.out.println("Nessuna risposta ricevuta.");
+            System.out.println("--> Button pressed.");
+            // System.out.println("Response code: " + response.getCode());
+            // System.out.println("Response text: " + response.getResponseText());
+        } 
+        else {
+            System.out.println("Error, button NOT pressed.");
+            // System.out.println("No response received.");
         }
+
     }
+    
 }

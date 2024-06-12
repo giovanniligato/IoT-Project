@@ -26,6 +26,7 @@ static bool vault_activated = false;
 static void
 res_event_handler(void)
 {
+    // Toggle the vault_activated variable
     vault_activated = !vault_activated;
     // Notify all the observers
     coap_notify_observers(&res_movement);
@@ -54,7 +55,7 @@ res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buff
 
     if (length < 0) {
         coap_set_status_code(response, BAD_REQUEST_4_00);
-        LOG_ERR("[Movement] Error generating SenML payload\n");
+        LOG_ERR("[Movement] Error in creating SenML payload\n");
     } else {
         coap_set_header_content_format(response, APPLICATION_JSON);
         coap_set_payload(response, buffer, length);
@@ -65,18 +66,19 @@ res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buff
     
 }
 
-static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
+static void 
+res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
-    // Ricezione e stampa del payload della richiesta POST
+    // Getting the payload of the POST request
     const char *payload = (char*)request->payload;
-    LOG_DBG("[Movement] Received the payload: %s\n", payload);
+    LOG_DBG("[Movement] POST_HANDLER: Received the payload: %s\n", payload);
 
-    // Alterna lo stato della variabile vault_activated
+    // Toggle the vault_activated variable
     vault_activated = !vault_activated;
 
-    // Notifica a tutti gli osservatori della risorsa che lo stato è cambiato
+    // Notify all the observers
     coap_notify_observers(&res_movement);
 
-    // Imposta il codice di stato della risposta a 2.04 (Changed)
+    // Set the response code to CHANGED_2_04
     coap_set_status_code(response, CHANGED_2_04);
 }

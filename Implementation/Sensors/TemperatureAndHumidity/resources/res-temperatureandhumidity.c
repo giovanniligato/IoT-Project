@@ -11,15 +11,17 @@
 #define LOG_MODULE "App"
 #define LOG_LEVEL LOG_LEVEL_APP
 
+// Minimum and maximum temperature levels
 #define MIN_TEMPERATURE_LEVEL 0.0
 #define MAX_TEMPERATURE_LEVEL 30.6
+// Maximum percentage variation for temperature (5%)
 #define MAX_PERCENTAGE_VARIATION_TEMPERATURE 0.05
 
+// Minimum and maximum humidity levels
 #define MIN_HUMIDITY_LEVEL 1.1
 #define MAX_HUMIDITY_LEVEL 99.9
+// Maximum percentage variation for humidity (5%)
 #define MAX_PERCENTAGE_VARIATION_HUMIDITY 0.05
-
-
 
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void res_event_handler(void);
@@ -32,7 +34,7 @@ EVENT_RESOURCE(res_temperatureandhumidity,
                NULL,
                res_event_handler);
 
-
+// Current temperature and humidity levels (-1.0 means not initialized)
 static double temperature_level = -1.0;
 static double humidity_level = -1.0;
 
@@ -43,6 +45,7 @@ res_event_handler(void)
 {
     // New Measurement of temperature and humidity
     if(temperature_level < 0 && humidity_level < 0) {
+        // Initialize the temperature and humidity levels with random values
         temperature_level = init_random_number(MIN_TEMPERATURE_LEVEL, MAX_TEMPERATURE_LEVEL);
         humidity_level = init_random_number(MIN_HUMIDITY_LEVEL, MAX_HUMIDITY_LEVEL);
     }
@@ -92,7 +95,7 @@ res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buff
 
     if (length < 0) {
         coap_set_status_code(response, BAD_REQUEST_4_00);
-        LOG_ERR("[TemperatureAndHumidity] Error generating SenML payload\n");
+        LOG_ERR("[TemperatureAndHumidity] Error in creating SenML payload\n");
     } else {
         coap_set_header_content_format(response, APPLICATION_JSON);
         coap_set_payload(response, buffer, length);

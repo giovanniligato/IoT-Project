@@ -37,30 +37,29 @@ public class CoapObserver {
                 query = null;
         }
 
-         
         NetworkConfig.createStandardWithoutFile();
     }
 
     public void startObserving() {
         
         relation = client.observe(new CoapHandler() {
+            
             @Override
             public void onLoad(CoapResponse response) {
                 String content = response.getResponseText();
-                // System.out.println("Notifica ricevuta: " + content);
+                // System.out.println("Notification received: " + content);
                 List<String> values = SenMLParser.parseSenmlPayload(content);
 
-                if (values.get(0).equals("-1.0")) {                    
+                if (values.get(0).equals("-1.0")) {      
+                    // Registration phase              
                     return;
                 }
                  
-                // Aggiungi info al database
+                // Add data to the database
                 try(Connection connection = Database.getConnection()) {
-                    // Preparazione della query SQL per recuperare le informazioni
-                    
+
+                    // Preparing the SQL query for the insertion of the data
                     PreparedStatement ps = connection.prepareStatement(query);
-                    
-                    // ciclo for con set_string 
                     for(int i = 0; i < values.size(); i++) {
                         if (values.get(i).equals("true"))
                             ps.setBoolean(i+1, true);
@@ -70,36 +69,41 @@ public class CoapObserver {
                             ps.setDouble(i+1, Double.parseDouble(values.get(i)));
                     }
 
-                    // Esecuzione della query                           
+                    // Execute the query
                     ps.executeUpdate();
 
                     if (ps.getUpdateCount() < 1) {
                         // ERROR
-                        // System.err.println("Errore nell'inserimento dei dati nel database");
+                        // System.err.println("Error in inserting data into the database");
                     } else {
                         // SUCCESS
-                        // System.out.println("Dati inseriti correttamente");
+                        // System.out.println("Data inserted correctly");
                     }
                     
                 } catch (Exception e) {
-                    // Gestione degli errori
+                    // Error handling
                     e.printStackTrace();
                 }
             }
 
             @Override
             public void onError() {
-                System.err.println("Errore nell'osservazione della risorsa");
+                System.err.println("Error in observing the resource");
             }
+
         });
-        }
+
+    }
 
     public void stopObserving() {
+
         if (relation != null) {
             relation.proactiveCancel();
         }
         if (client != null) {
             client.shutdown();
         }
+        
     }
+
 }

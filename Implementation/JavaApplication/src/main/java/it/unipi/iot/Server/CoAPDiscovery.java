@@ -29,7 +29,7 @@ public class CoAPDiscovery extends CoapResource {
                                   .findFirst()
                                   .orElse(null);
 
-        // Verifica se il parametro "resource" è stato fornito
+        // Verifies if the "resource" parameter has been provided
         if (resource == null) {
             exchange.respond(CoAP.ResponseCode.BAD_REQUEST, "Requested Resource parameter missing");
             return;
@@ -37,30 +37,31 @@ public class CoAPDiscovery extends CoapResource {
 
         try(Connection connection = Database.getConnection()) {
 
-            // Preparazione della query SQL per recuperare le informazioni
+            // Preparing the SQL query to retrieve the information
             String query = "SELECT * FROM iot_nodes WHERE resource_exposed = ?";
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, resource);
 
-            // Esecuzione della query
+            // Execute the query
             ResultSet resultSet = statement.executeQuery();
 
-            // Verifica se sono stati trovati risultati
+            // Verifies if results have been found
             if (resultSet.next()) {
-                // Costruisci la risposta con i dati ottenuti dal database
+                // Build the response with the data obtained from the database
                 String responseData = resultSet.getString("ip");
                 exchange.respond(CoAP.ResponseCode.CONTENT, responseData, MediaTypeRegistry.TEXT_PLAIN);
             } else {
-                // Risorsa non trovata
+                // Resource not found
                 exchange.respond(CoAP.ResponseCode.NOT_FOUND, "Resource not found");
             }
 
-            // Chiudi la connessione al database
+            // Close the connection to the database
             resultSet.close();
             statement.close();
             connection.close();
+
         } catch (Exception e) {
-            // Gestione degli errori
+            // Error handling
             exchange.respond(CoAP.ResponseCode.INTERNAL_SERVER_ERROR, "Internal Server Error");
             e.printStackTrace();
         }

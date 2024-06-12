@@ -3,8 +3,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <locale.h>
-// #include "debug_sleep.h"
-// #include "sys/clock.h"
 
 #ifndef COOJA
 #include <nrfx.h>
@@ -13,8 +11,11 @@
 #include <stdint.h>
 #include "json-senml.h"
 
-#define MAX_MEASUREMENTS 2 // Definisci il numero massimo di misurazioni che il buffer può contenere
-
+/**
+ * Retrieves the MAC address of the node and formats it as a string.
+ *
+ * @param mac_str A string buffer where the formatted MAC address will be stored.
+ */
 void get_mac_address(char *mac_str) {
     
     uint8_t mac[6];
@@ -26,8 +27,9 @@ void get_mac_address(char *mac_str) {
     mac[4] = (NRF_FICR->DEVICEADDR[0] >> 8) & 0xFF;
     mac[5] = (NRF_FICR->DEVICEADDR[0] >> 0) & 0xFF;
     #else
-    // Genera un indirizzo MAC fittizio per la simulazione in Cooja
-    mac[0] = 0x02; // UAA (Universally Administered Address) con un bit LSB impostato a 0
+    // Generates a fake MAC address for simulation in Cooja
+    // UAA (Universally Administered Address) with the LSB bit set to 0
+    mac[0] = 0x02;
     mac[1] = 0x00;
     mac[2] = 0x00;
     mac[3] = 0x00;
@@ -39,16 +41,25 @@ void get_mac_address(char *mac_str) {
              mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 }
 
+
+/**
+ * Creates a SenML payload in JSON format.
+ *
+ * @param buffer A buffer to hold the generated JSON string.
+ * @param buffer_size The size of the buffer.
+ * @param payload A structure containing the SenML measurements and metadata.
+ * @return The length of the generated JSON string or -1 on error.
+ */
 int create_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *payload)
 {
     if (buffer == NULL || payload == NULL || payload->measurements == NULL || payload->num_measurements == 0) {
         return -1;
     }
 
-    // Salva il locale corrente
+    // Save the current locale
     char *current_locale = setlocale(LC_NUMERIC, NULL);
 
-    // Imposta il locale su "C" per usare il punto come separatore decimale
+    // Set the locale to "C" to use the dot as decimal separator
     setlocale(LC_NUMERIC, "C");
 
     size_t offset = 0;
@@ -76,7 +87,7 @@ int create_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pa
                                    payload->measurements[i].name, payload->measurements[i].value.sv, payload->measurements[i].unit);
                 break;
             default:
-                // Ripristina il locale originale
+                // Restore the original locale
                 setlocale(LC_NUMERIC, current_locale);
                 return -1;
         }
@@ -89,7 +100,7 @@ int create_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pa
     offset += snprintf(buffer + offset, buffer_size - offset, "],\"bn\":\"%s\",\"bt\":%d,\"ver\":%d}", 
                        payload->base_name, payload->base_time, payload->version);
 
-    // Ripristina il locale originale
+    // Restore the original locale
     setlocale(LC_NUMERIC, current_locale);
     
     if (offset >= buffer_size) {
@@ -99,6 +110,15 @@ int create_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *pa
     return offset;
 }
 
+
+/**
+ * Parses a SenML payload from a JSON buffer.
+ *
+ * @param buffer The JSON buffer containing the SenML payload.
+ * @param buffer_size The size of the buffer.
+ * @param payload A structure to hold the parsed SenML measurements and metadata.
+ * @return 0 on success or -1 on error.
+ */
 int parse_senml_payload(char *buffer, uint16_t buffer_size, senml_payload_t *payload) {
     if (buffer == NULL || payload == NULL) {
         printf("ERROR in parse_senml_payload: POSITION 1\n");

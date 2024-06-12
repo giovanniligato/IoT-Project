@@ -1,4 +1,4 @@
-CONTIKI_PROJECT = movement
+CONTIKI_PROJECT = co
 all: $(CONTIKI_PROJECT)
 
 # Include CoAP resources

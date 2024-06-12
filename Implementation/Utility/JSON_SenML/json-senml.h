@@ -8,7 +8,7 @@
 typedef union {
     double v;       // Numeric value
     bool bv;        // Boolean value
-    char *sv; // String value
+    char *sv;       // String value
 } senml_value_t;
 
 typedef enum {

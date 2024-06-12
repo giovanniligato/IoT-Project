@@ -11,8 +11,11 @@
 #define LOG_MODULE "App"
 #define LOG_LEVEL LOG_LEVEL_APP
 
+// Minimum and maximum CO levels
 #define MIN_CO_LEVEL 0.00117
 #define MAX_CO_LEVEL 0.01442
+
+// Maximum percentage variation (5%)
 #define MAX_PERCENTAGE_VARIATION 0.05
 
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
@@ -27,6 +30,7 @@ EVENT_RESOURCE(res_co,
                res_event_handler);
 
 
+// Current CO level (-1.0 means not initialized)
 static double co_level = -1.0;
 
 extern bool hvac_status;
@@ -35,10 +39,13 @@ static void
 res_event_handler(void)
 {
     // New CO level measurement
-    if(co_level < 0) 
+    if(co_level < 0){
+        // Initialize the CO level with a random value
         co_level = init_random_number(MIN_CO_LEVEL, MAX_CO_LEVEL);
-    else
+    }
+    else{
         co_level = generate_random_number(MIN_CO_LEVEL, MAX_CO_LEVEL, co_level, MAX_PERCENTAGE_VARIATION, hvac_status);
+    }
     
     // LOG_DBG("New CO level: %f\n", co_level);
     

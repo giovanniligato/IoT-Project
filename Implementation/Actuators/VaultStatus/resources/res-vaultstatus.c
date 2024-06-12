@@ -56,7 +56,7 @@ res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buff
 
     if (length < 0) {
         coap_set_status_code(response, BAD_REQUEST_4_00);
-        LOG_ERR("[VoltStatus] Error generating SenML payload\n");
+        LOG_ERR("[VoltStatus] Error in creating SenML payload\n");
     } else {
         coap_set_header_content_format(response, APPLICATION_JSON);
         coap_set_payload(response, buffer, length);
