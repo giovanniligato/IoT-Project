@@ -57,7 +57,6 @@ AUTOSTART_PROCESSES(&pir_motion_sensor_process);
 
 PROCESS_THREAD(pir_motion_sensor_process, ev, data)
 {
-  static struct etimer timer;
   static button_hal_button_t *manual_opening;
 
   PROCESS_BEGIN();

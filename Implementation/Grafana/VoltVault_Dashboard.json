@@ -495,7 +495,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT timestamp, temperature FROM iot_voltvault.temphum_sensor;",
+          "rawSql": "SELECT timestamp, humidity FROM iot_voltvault.temphum_sensor;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -511,7 +511,7 @@
               {
                 "parameters": [
                   {
-                    "name": "temperature",
+                    "name": "humidity",
                     "type": "functionParameter"
                   }
                 ],
@@ -678,6 +678,6 @@
   "timezone": "browser",
   "title": "VoltVault_Dashboard",
   "uid": "ddnd9l3j1p7nkb",
-  "version": 4,
+  "version": 1,
   "weekStart": ""
 }
